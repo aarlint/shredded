@@ -320,7 +320,7 @@ app.get('/api/lifts/heatmap/:userId', (req, res) => {
 app.post('/api/lifts/:id/react', (req, res) => {
   const liftId = parseInt(req.params.id);
   const { emoji } = req.body;
-  const allowed = ['💪', '🔥', '🫡', '😤', '🧢'];
+  const allowed = ['🍆', '🧱', '💦', '🔥'];
   if (!emoji || !allowed.includes(emoji)) {
     return res.status(400).json({ error: 'Invalid emoji' });
   }

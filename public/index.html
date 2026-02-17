@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -245,6 +246,7 @@ main {
   border: none;
   cursor: pointer;
   transition: all 0.15s;
+  text-decoration: none;
 }
 .btn-primary {
   background: linear-gradient(135deg, var(--gold), #b8943e);
@@ -464,14 +466,29 @@ label {
 }
 
 .activity-item {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.75rem 0;
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--border);
 }
 .activity-item:last-child { border-bottom: none; }
+.activity-body { flex: 1; min-width: 0; }
+.activity-header {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;
+}
+.activity-name { font-weight: 600; font-size: 0.85rem; }
+.activity-time { font-size: 0.7rem; color: var(--text-dim); margin-left: auto; white-space: nowrap; }
+.activity-lift {
+  display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;
+}
 .activity-weight {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.1rem; font-weight: 600;
+  font-size: 1.15rem; font-weight: 700; line-height: 1;
+}
+.activity-e1rm { font-size: 0.7rem; color: var(--text-dim); }
+.activity-badges { display: flex; gap: 0.25rem; align-items: center; }
+.activity-notes { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.3rem; }
+.activity-footer {
+  display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem;
 }
 .activity-meta { font-size: 0.75rem; color: var(--text-dim); }
 
@@ -580,7 +597,13 @@ label {
 .toast.pr { border-color: var(--gold); }
 .toast.achievement { border-color: var(--green); }
 .toast.mention { border-color: var(--blue); }
-.toast-icon { font-size: 1.5rem; }
+.toast-icon { font-size: 1.5rem; display: flex; align-items: center; }
+.toast-icon svg { width: 24px; height: 24px; }
+.nav-icon svg { width: 20px; height: 20px; }
+.stat-card-icon svg { width: 24px; height: 24px; }
+.notif-icon svg { width: 20px; height: 20px; }
+.lift-option-icon svg { width: 28px; height: 28px; }
+.react-btn svg { width: 16px; height: 16px; vertical-align: middle; }
 .toast-text { font-size: 0.85rem; font-weight: 600; }
 .toast-sub { font-size: 0.7rem; color: var(--text-secondary); }
 @keyframes toastIn {
@@ -1591,7 +1614,7 @@ input:focus, select:focus, textarea:focus {
   justify-content: space-around;
   align-items: center;
   height: 64px;
-  max-width: 500px;
+  max-width: 600px;
   margin: 0 auto;
 }
 .bottom-nav-item {
@@ -1744,13 +1767,24 @@ input:focus, select:focus, textarea:focus {
   max-width: 320px;
 }
 
+/* Chat fullscreen (mobile route) */
+.chat-fullscreen {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 61px - 64px);
+  background: rgba(16,16,20,0.95);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
 @media (max-width: 768px) {
   .bottom-nav { display: block; }
   /* Hide top nav links on mobile, show bottom nav instead */
   nav .nav-links { display: none !important; }
   .hamburger { display: none !important; }
   main { padding-bottom: 80px; }
-  .chat-toggle-btn { bottom: 80px; }
+  .chat-toggle-btn { display: none !important; }
+  .chat-sidebar.mobile-open { display: none !important; }
   .pwa-install-banner { bottom: 140px; }
 }
 
@@ -1785,7 +1819,7 @@ input:focus, select:focus, textarea:focus {
   <!-- Toasts -->
   <div class="toast-container">
     <div v-for="t in toasts" :key="t.id" class="toast" :class="t.cls || ''">
-      <span class="toast-icon">{{ t.icon }}</span>
+      <span class="toast-icon" v-html="t.icon"></span>
       <div>
         <div class="toast-text">{{ t.text }}</div>
         <div v-if="t.sub" class="toast-sub">{{ t.sub }}</div>
@@ -1818,13 +1852,14 @@ input:focus, select:focus, textarea:focus {
         <notifications-page v-else-if="route === 'notifications'" :current-user="currentUser" :api="api" @read="fetchUnreadCount"></notifications-page>
         <challenges-page v-else-if="route === 'challenges'" :current-user="currentUser" :show-toast="addToast" :api="api"></challenges-page>
         <profile-page v-else-if="route === 'profile'" :current-user="currentUser" :show-toast="addToast" :api="api" @user-updated="onUserUpdated"></profile-page>
+        <chat-panel v-else-if="route === 'chat'" :current-user="currentUser" :api="api" class="chat-fullscreen"></chat-panel>
         <dashboard-page v-else :current-user="currentUser" :show-toast="addToast" :api="api" @vote="handleVote"></dashboard-page>
         </div>
       </main>
     </div>
-    <chat-panel :current-user="currentUser" :api="api" :class="{ 'mobile-open': chatOpen }" class="chat-sidebar"></chat-panel>
+    <chat-panel v-if="route !== 'chat'" :current-user="currentUser" :api="api" :class="{ 'mobile-open': chatOpen }" class="chat-sidebar"></chat-panel>
     <button class="chat-toggle-btn" @click="chatOpen = !chatOpen" :title="chatOpen ? 'Close chat' : 'Open chat'">
-      {{ chatOpen ? '✕' : '💬' }}
+      <span v-html="chatOpen ? $icon('x', 22) : $icon('message-circle', 22)"></span>
     </button>
   </div>
 
@@ -1832,33 +1867,36 @@ input:focus, select:focus, textarea:focus {
   <nav class="bottom-nav" v-if="currentUser">
     <div class="bottom-nav-inner">
       <a href="#dashboard" class="bottom-nav-item" :class="{ active: route === 'dashboard' }">
-        <span class="nav-icon">🏠</span>Home
+        <span class="nav-icon" v-html="$icon('house', 20)"></span>Home
       </a>
       <a href="#log" class="bottom-nav-item" :class="{ active: route === 'log' }">
-        <span class="nav-icon">➕</span>Log
+        <span class="nav-icon" v-html="$icon('plus', 20)"></span>Log
+      </a>
+      <a href="#chat" class="bottom-nav-item" :class="{ active: route === 'chat' }">
+        <span class="nav-icon" v-html="$icon('message-circle', 20)"></span>Chat
       </a>
       <a href="#history" class="bottom-nav-item" :class="{ active: route === 'history' }">
-        <span class="nav-icon">📊</span>History
+        <span class="nav-icon" v-html="$icon('bar-chart-3', 20)"></span>History
       </a>
       <a href="#notifications" class="bottom-nav-item" :class="{ active: route === 'notifications' }">
-        <span class="nav-icon">🔔</span>Alerts
+        <span class="nav-icon" v-html="$icon('bell', 20)"></span>Alerts
         <span v-if="unreadCount > 0" class="badge-count">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
       </a>
       <a href="#profile" class="bottom-nav-item" :class="{ active: route === 'profile' }">
-        <span class="nav-icon">👤</span>Profile
+        <span class="nav-icon" v-html="$icon('user', 20)"></span>Profile
       </a>
     </div>
   </nav>
 
   <!-- PWA install prompt -->
   <div v-if="showInstallPrompt" class="pwa-install-banner">
-    <span style="font-size:1.5rem">📲</span>
+    <span style="font-size:1.5rem;display:flex" v-html="$icon('download', 24)"></span>
     <div style="flex:1">
       <div style="font-weight:600;font-size:0.85rem">Install App</div>
       <div style="font-size:0.7rem;color:var(--text-secondary)">Add to home screen for the best experience</div>
     </div>
     <button class="btn btn-primary btn-sm" @click="installPWA">Install</button>
-    <button class="btn btn-ghost btn-sm" @click="showInstallPrompt = false" style="padding:0.25rem">✕</button>
+    <button class="btn btn-ghost btn-sm" @click="showInstallPrompt = false" style="padding:0.25rem" v-html="$icon('x', 16)"></button>
   </div>
 </div>
 
@@ -1873,6 +1911,18 @@ const api = {
   async del(url) { const r = await fetch('/api' + url, { method: 'DELETE' }); if (!r.ok) throw new Error(r.statusText); return r.json(); },
   async upload(url, formData) { const r = await fetch('/api' + url, { method: 'POST', body: formData }); if (!r.ok) throw new Error(r.statusText); return r.json(); }
 };
+
+// ── Lucide icon helper ──
+function lucideIconSvg(name, size = 20) {
+  // Convert kebab-case to PascalCase (e.g. 'bar-chart-3' -> 'BarChart3')
+  const pascal = name.replace(/(^|-)([a-z0-9])/g, (_, __, c) => c.toUpperCase());
+  const iconData = lucide.icons[pascal];
+  if (!iconData) return '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconData.map(([tag, a]) => {
+    const attrStr = Object.entries(a).map(([k, v]) => `${k}="${v}"`).join(' ');
+    return `<${tag} ${attrStr}/>`;
+  }).join('')}</svg>`;
+}
 
 // ── Helpers ──
 function today() { return new Date().toISOString().split('T')[0]; }
@@ -1897,7 +1947,7 @@ function timeAgo(iso) {
   return Math.floor(diff / 86400) + 'd ago';
 }
 function liftIcon(type) {
-  return type === 'squat' ? '🦵' : type === 'bench' ? '🏋️' : '💀';
+  return type === 'squat' ? lucideIconSvg('arrow-down-up', 16) : type === 'bench' ? lucideIconSvg('dumbbell', 16) : lucideIconSvg('skull', 16);
 }
 function isVideoFile(filename) {
   return /\.(mp4|mov|webm|avi|mkv|m4v)$/i.test(filename);
@@ -1913,12 +1963,12 @@ function avatarStyle(color) {
 
 // XP / Tier helpers
 const TIER_THRESHOLDS = [
-  { min: 2000, tier: 'Mythic', icon: '🔱', cls: 'tier-mythic' },
-  { min: 1000, tier: 'Diamond', icon: '💎', cls: 'tier-diamond' },
-  { min: 600, tier: 'Titanium', icon: '⚡', cls: 'tier-titanium' },
-  { min: 300, tier: 'Steel', icon: '🔩', cls: 'tier-steel' },
-  { min: 100, tier: 'Iron', icon: '🪨', cls: 'tier-iron' },
-  { min: 0, tier: 'Recruit', icon: '🏷️', cls: 'tier-recruit' },
+  { min: 2000, tier: 'Mythic', icon: lucideIconSvg('crown', 14), cls: 'tier-mythic' },
+  { min: 1000, tier: 'Diamond', icon: lucideIconSvg('gem', 14), cls: 'tier-diamond' },
+  { min: 600, tier: 'Titanium', icon: lucideIconSvg('zap', 14), cls: 'tier-titanium' },
+  { min: 300, tier: 'Steel', icon: lucideIconSvg('wrench', 14), cls: 'tier-steel' },
+  { min: 100, tier: 'Iron', icon: lucideIconSvg('mountain', 14), cls: 'tier-iron' },
+  { min: 0, tier: 'Recruit', icon: lucideIconSvg('tag', 14), cls: 'tier-recruit' },
 ];
 function computeXP(u) {
   const totalLifts = u.total_lifts || 0;
@@ -1965,9 +2015,9 @@ function showLightbox(src, isVideo) {
   overlay.className = 'media-lightbox';
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
   if (isVideo) {
-    overlay.innerHTML = '<button class="media-lightbox-close" onclick="this.parentElement.remove()">✕</button><video src="' + src + '" controls autoplay style="max-width:90vw;max-height:90vh;border-radius:var(--radius)"></video>';
+    overlay.innerHTML = '<button class="media-lightbox-close" onclick="this.parentElement.remove()">' + lucideIconSvg('x', 20) + '</button><video src="' + src + '" controls autoplay style="max-width:90vw;max-height:90vh;border-radius:var(--radius)"></video>';
   } else {
-    overlay.innerHTML = '<button class="media-lightbox-close" onclick="this.parentElement.remove()">✕</button><img src="' + src + '" alt="Lift media">';
+    overlay.innerHTML = '<button class="media-lightbox-close" onclick="this.parentElement.remove()">' + lucideIconSvg('x', 20) + '</button><img src="' + src + '" alt="Lift media">';
   }
   document.body.appendChild(overlay);
   const handler = (e) => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', handler); } };
@@ -2058,7 +2108,7 @@ const app = createApp({
     function handleWSEvent(event, data) {
       if (event === 'new_lift' && currentUser.value && data.user_id !== currentUser.value.id) {
         const prText = data.is_pr ? ' (NEW PR!)' : '';
-        addToast('🔔', `${data.display_name} logged ${data.lift_type}`, `${data.weight} lbs${prText}`);
+        addToast(lucideIconSvg('bell', 24), `${data.display_name} logged ${data.lift_type}`, `${data.weight} lbs${prText}`);
       }
       if (event === 'achievement' && currentUser.value && data.user_id !== currentUser.value.id) {
         data.achievements.forEach(a => {
@@ -2066,7 +2116,7 @@ const app = createApp({
         });
       }
       if (event === 'mention' && currentUser.value && data.mentioned_user_ids.includes(currentUser.value.id)) {
-        addToast('💬', `${data.from_display_name} mentioned you`, data.message.length > 60 ? data.message.slice(0, 60) + '...' : data.message, 'mention');
+        addToast(lucideIconSvg('message-circle', 24), `${data.from_display_name} mentioned you`, data.message.length > 60 ? data.message.slice(0, 60) + '...' : data.message, 'mention');
       }
       // Notify all registered component handlers
       for (const handler of wsHandlers) {
@@ -2078,7 +2128,7 @@ const app = createApp({
       try {
         return await api.post(`/lifts/${liftId}/vote`, { vote_type: voteType });
       } catch (err) {
-        addToast('❌', 'Error', err.message);
+        addToast(lucideIconSvg('x-circle', 24), 'Error', err.message);
         return null;
       }
     }
@@ -2193,12 +2243,12 @@ app.component('react-buttons', {
   template: `
     <span class="react-btns" v-if="isOwn ? (hype > 0 || down > 0) : true">
       <template v-if="isOwn">
-        <span v-if="hype > 0" class="react-btn up" style="cursor:default;pointer-events:none">💪 <span class="react-count">{{ hype }}</span></span>
-        <span v-if="down > 0" class="react-btn down" style="cursor:default;pointer-events:none">👎 <span class="react-count">{{ down }}</span></span>
+        <span v-if="hype > 0" class="react-btn up" style="cursor:default;pointer-events:none"><span v-html="$icon('thumbs-up', 16)"></span> <span class="react-count">{{ hype }}</span></span>
+        <span v-if="down > 0" class="react-btn down" style="cursor:default;pointer-events:none"><span v-html="$icon('thumbs-down', 16)"></span> <span class="react-count">{{ down }}</span></span>
       </template>
       <template v-else>
-        <button class="react-btn up" :class="{ active: lift.user_vote === 1 }" @click.stop="$emit('vote', lift.id, 1)" title="Hype this lift">💪 <span class="react-count">{{ hype > 0 ? hype : '' }}</span></button>
-        <button class="react-btn down" :class="{ active: lift.user_vote === -1 }" @click.stop="$emit('vote', lift.id, -1)" title="Call BS on this lift">👎 <span class="react-count">{{ down > 0 ? down : '' }}</span></button>
+        <button class="react-btn up" :class="{ active: lift.user_vote === 1 }" @click.stop="$emit('vote', lift.id, 1)" title="Hype this lift"><span v-html="$icon('thumbs-up', 16)"></span> <span class="react-count">{{ hype > 0 ? hype : '' }}</span></button>
+        <button class="react-btn down" :class="{ active: lift.user_vote === -1 }" @click.stop="$emit('vote', lift.id, -1)" title="Call BS on this lift"><span v-html="$icon('thumbs-down', 16)"></span> <span class="react-count">{{ down > 0 ? down : '' }}</span></button>
       </template>
     </span>
   `,
@@ -2219,7 +2269,7 @@ app.component('media-thumb', {
       <video v-if="isVideo" :src="url" preload="metadata" muted></video>
       <img v-else :src="url" alt="Lift media" loading="lazy">
       <div v-if="isVideo" class="video-play-overlay">▶</div>
-      <button v-if="canRemove" class="remove-media-btn" @click.stop="$emit('remove', liftId)" title="Remove media">✕</button>
+      <button v-if="canRemove" class="remove-media-btn" @click.stop="$emit('remove', liftId)" title="Remove media" v-html="$icon('x', 14)"></button>
     </div>
   `,
   computed: {
@@ -2249,7 +2299,7 @@ app.component('emoji-reactions', {
     </div>
   `,
   data() {
-    return { pickerOpen: false, emojis: ['💪', '🔥', '🫡', '😤', '🧢'] };
+    return { pickerOpen: false, emojis: ['🍆', '🧱', '💦', '🔥'] };
   },
   methods: {
     async react(emoji) {
@@ -2403,22 +2453,22 @@ app.component('dashboard-page', {
 
       <div v-if="stats" class="stats-grid mb-1">
         <div class="stat-card">
-          <div class="stat-card-icon">🏋️</div>
+          <div class="stat-card-icon" v-html="$icon('dumbbell', 24)"></div>
           <div class="stat-card-value">{{ stats.totalLifts }}</div>
           <div class="stat-card-label">Total Lifts</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-icon">🔥</div>
+          <div class="stat-card-icon" v-html="$icon('flame', 24)"></div>
           <div class="stat-card-value">{{ stats.streak }}</div>
           <div class="stat-card-label">Day Streak</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-icon">📅</div>
+          <div class="stat-card-icon" v-html="$icon('calendar', 24)"></div>
           <div class="stat-card-value">{{ stats.weekLifts }}</div>
           <div class="stat-card-label">This Week</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-icon">{{ myTier.icon }}</div>
+          <div class="stat-card-icon" v-html="myTier.icon"></div>
           <div class="stat-card-value" style="font-size:1.1rem">{{ myTier.tier }}</div>
           <div class="stat-card-label">{{ stats.xp }} XP</div>
           <div class="xp-bar"><div class="xp-fill" :style="{ width: myXpProgress.pct + '%' }"></div></div>
@@ -2474,8 +2524,8 @@ app.component('dashboard-page', {
           <div class="user-info">
             <div class="avatar" :style="avatarStyle(u.avatar_color)"><img v-if="u.avatar_url" :src="avatarUrl(u.avatar_url)"><template v-else>{{ initials(u.display_name) }}</template></div>
             <div>
-              <div style="font-weight:600;font-size:0.9rem">{{ u.display_name }}{{ i === 0 ? ' 👑' : '' }}</div>
-              <span :class="['tier-badge', userTier(u).cls]">{{ userTier(u).icon }} {{ userTier(u).tier }}</span>
+              <div style="font-weight:600;font-size:0.9rem;display:flex;align-items:center;gap:0.25rem">{{ u.display_name }}<span v-if="i === 0" v-html="$icon('crown', 16)" style="color:var(--gold)"></span></div>
+              <span :class="['tier-badge', userTier(u).cls]"><span v-html="userTier(u).icon" style="display:inline-flex;vertical-align:middle"></span> {{ userTier(u).tier }}</span>
               <span v-if="u.total >= u.total_goal" class="club-badge" style="margin-left:0.25rem">&#9733; MEMBER</span>
             </div>
           </div>
@@ -2496,27 +2546,31 @@ app.component('dashboard-page', {
       <div class="card">
         <div class="card-header">Recent Activity</div>
         <div v-if="activity.length === 0" class="text-center text-dim" style="padding:2rem">No lifts logged yet. Be the first!</div>
-        <div v-for="a in activity" :key="a.id" class="activity-item" style="flex-wrap:wrap">
-          <div class="avatar" style="width:28px;height:28px;font-size:0.6rem" :style="avatarStyle(a.avatar_color)"><img v-if="a.avatar_url" :src="avatarUrl(a.avatar_url)"><template v-else>{{ initials(a.display_name) }}</template></div>
-          <div style="flex:1">
-            <span style="font-weight:600;font-size:0.85rem">{{ a.display_name }}</span>
-            <span class="lift-badge" :class="a.lift_type">{{ a.lift_type }}</span>
-            <span class="activity-weight">{{ a.weight }} lbs<template v-if="a.reps > 1"> x{{ a.reps }}</template></span>
-            <span v-if="a.reps > 1 && a.e1rm" style="font-size:0.7rem;color:var(--text-dim)">e1RM: {{ a.e1rm }}</span>
-            <span v-if="a.is_pr" class="pr-badge">PR</span>
-            <span v-if="a.is_sus" class="sus-badge">SUS</span>
-            <span v-if="a.vote_count >= 3" class="fng-badge">FAKE AND GAY</span>
-            <div v-if="a.notes" class="text-sm text-dim" style="margin-top:0.15rem">{{ a.notes }}</div>
-            <div v-if="a.media_filename">
+        <div v-for="a in activity" :key="a.id" class="activity-item">
+          <div class="avatar" style="width:32px;height:32px;font-size:0.6rem" :style="avatarStyle(a.avatar_color)"><img v-if="a.avatar_url" :src="avatarUrl(a.avatar_url)"><template v-else>{{ initials(a.display_name) }}</template></div>
+          <div class="activity-body">
+            <div class="activity-header">
+              <span class="activity-name">{{ a.display_name }}</span>
+              <span class="lift-badge" :class="a.lift_type">{{ a.lift_type }}</span>
+              <span class="activity-badges">
+                <span v-if="a.is_pr" class="pr-badge">PR</span>
+                <span v-if="a.is_sus" class="sus-badge">SUS</span>
+                <span v-if="a.vote_count >= 3" class="fng-badge">FAKE AND GAY</span>
+              </span>
+              <span class="activity-time">{{ timeAgo(a.created_at) }}</span>
+            </div>
+            <div class="activity-lift">
+              <span class="activity-weight">{{ a.weight }} lbs<template v-if="a.reps > 1"> x{{ a.reps }}</template></span>
+              <span v-if="a.reps > 1 && a.e1rm" class="activity-e1rm">e1RM: {{ a.e1rm }}</span>
+            </div>
+            <div v-if="a.notes" class="activity-notes">{{ a.notes }}</div>
+            <div v-if="a.media_filename" style="margin-top:0.35rem">
               <media-thumb :filename="a.media_filename" :small="true"></media-thumb>
             </div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.25rem">
-            <div class="activity-meta">{{ timeAgo(a.created_at) }}</div>
-            <react-buttons :lift="a" :current-user="currentUser" @vote="onVote"></react-buttons>
-          </div>
-          <div v-if="a.reactions && Object.keys(a.reactions).length > 0 || a.user_id !== currentUser.id" style="width:100%;padding-left:2.75rem">
-            <emoji-reactions :lift="a" :current-user="currentUser" :api="api"></emoji-reactions>
+            <div class="activity-footer">
+              <react-buttons :lift="a" :current-user="currentUser" @vote="onVote"></react-buttons>
+              <emoji-reactions v-if="a.reactions && Object.keys(a.reactions).length > 0 || a.user_id !== currentUser.id" :lift="a" :current-user="currentUser" :api="api"></emoji-reactions>
+            </div>
           </div>
         </div>
       </div>
@@ -2588,7 +2642,7 @@ app.component('dashboard-page', {
           lift.user_vote = result.user_vote;
         }
       } catch (err) {
-        props.showToast('❌', 'Error', err.message);
+        props.showToast(lucideIconSvg('x-circle', 24), 'Error', err.message);
       }
     }
 
@@ -2652,7 +2706,7 @@ app.component('log-page', {
       <div class="card-header text-center">Log a Max</div>
       <div class="lift-selector">
         <div v-for="t in liftTypes" :key="t.type" class="lift-option" :class="[t.type, { selected: selectedType === t.type }]" @click="selectedType = t.type">
-          <div class="lift-option-icon">{{ t.icon }}</div>
+          <div class="lift-option-icon" v-html="t.icon"></div>
           <div class="lift-option-label">{{ t.type }}</div>
         </div>
       </div>
@@ -2694,12 +2748,12 @@ app.component('log-page', {
       </div>
 
       <div v-if="!previewUrl" class="media-upload" @dragover.prevent="dragOver = true" @dragleave="dragOver = false" @drop.prevent="onDrop" :class="{ 'drag-over': dragOver }">
-        <div class="media-upload-icon">📎</div>
+        <div class="media-upload-icon" v-html="$icon('paperclip', 24)"></div>
         <div class="media-upload-text">Add photo or video (optional)</div>
         <input type="file" accept="image/*,video/*" @change="onFileSelect" ref="fileInput">
       </div>
       <div v-else class="media-preview">
-        <button class="media-preview-remove" type="button" @click="clearMedia">✕</button>
+        <button class="media-preview-remove" type="button" @click="clearMedia" v-html="$icon('x', 16)"></button>
         <video v-if="previewIsVideo" :src="previewUrl" controls muted></video>
         <img v-else :src="previewUrl" alt="Preview">
       </div>
@@ -2724,9 +2778,9 @@ app.component('log-page', {
     const currentPR = ref(0);
 
     const liftTypes = [
-      { type: 'squat', icon: '🦵' },
-      { type: 'bench', icon: '🏋️' },
-      { type: 'deadlift', icon: '💀' },
+      { type: 'squat', icon: lucideIconSvg('arrow-down-up', 28) },
+      { type: 'bench', icon: lucideIconSvg('dumbbell', 28) },
+      { type: 'deadlift', icon: lucideIconSvg('skull', 28) },
     ];
 
     const estimatedMax = computed(() => {
@@ -2795,13 +2849,13 @@ app.component('log-page', {
         const repText = reps.value > 1 ? ` x${reps.value} (e1RM: ${estimatedMax.value})` : '';
         if (result.isPR) {
           confetti();
-          props.showToast('🏆', 'NEW PR!', `${selectedType.value.toUpperCase()} — ${weight.value} lbs${repText}`, 'pr');
+          props.showToast(lucideIconSvg('trophy', 24), 'NEW PR!', `${selectedType.value.toUpperCase()} — ${weight.value} lbs${repText}`, 'pr');
         } else {
-          props.showToast('✅', 'Lift logged!', `${selectedType.value.toUpperCase()} — ${weight.value} lbs${repText}`);
+          props.showToast(lucideIconSvg('check-circle', 24), 'Lift logged!', `${selectedType.value.toUpperCase()} — ${weight.value} lbs${repText}`);
         }
 
         if (result.isSus) {
-          setTimeout(() => props.showToast('🤨', 'SUS', "That's a big jump... flagged as suspicious"), 800);
+          setTimeout(() => props.showToast(lucideIconSvg('alert-triangle', 24), 'SUS', "That's a big jump... flagged as suspicious"), 800);
         }
 
         if (result.newAchievements && result.newAchievements.length > 0) {
@@ -2819,7 +2873,7 @@ app.component('log-page', {
         reps.value = 1;
         clearMedia();
       } catch (e) {
-        props.showToast('❌', 'Error', e.message);
+        props.showToast(lucideIconSvg('x-circle', 24), 'Error', e.message);
       }
       submitting.value = false;
     }
@@ -2895,12 +2949,12 @@ app.component('history-page', {
               <media-thumb :filename="l.media_filename" :small="true" :can-remove="isOwn" :lift-id="l.id" @remove="removeMedia"></media-thumb>
             </div>
             <div v-else-if="isOwn" class="add-media-wrap">
-              <label class="add-media-btn">📎 Add<input type="file" accept="image/*,video/*" @change="addMedia($event, l.id)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%"></label>
+              <label class="add-media-btn"><span v-html="$icon('paperclip', 14)" style="display:inline-flex;vertical-align:middle"></span> Add<input type="file" accept="image/*,video/*" @change="addMedia($event, l.id)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%"></label>
             </div>
           </span>
           <span style="display:flex;align-items:center;gap:0.25rem">
             <react-buttons :lift="l" :current-user="currentUser" @vote="onVote"></react-buttons>
-            <button v-if="isOwn" class="btn btn-ghost btn-sm" @click="deleteLift(l.id)" title="Delete">✕</button>
+            <button v-if="isOwn" class="btn btn-ghost btn-sm" @click="deleteLift(l.id)" title="Delete" v-html="$icon('x', 16)"></button>
           </span>
           <emoji-reactions v-if="l.reactions && Object.keys(l.reactions).length > 0 || !isOwn" :lift="l" :current-user="currentUser" :api="api" style="grid-column:1/-1"></emoji-reactions>
         </div>
@@ -2983,7 +3037,7 @@ app.component('history-page', {
           lift.user_vote = result.user_vote;
         }
       } catch (err) {
-        props.showToast('❌', 'Error', err.message);
+        props.showToast(lucideIconSvg('x-circle', 24), 'Error', err.message);
       }
     }
 
@@ -3006,9 +3060,9 @@ app.component('history-page', {
         const result = await props.api.upload(`/lifts/${liftId}/media`, fd);
         const lift = lifts.value.find(l => l.id === liftId);
         if (lift) lift.media_filename = result.media_filename;
-        props.showToast('✅', 'Media added');
+        props.showToast(lucideIconSvg('check-circle', 24), 'Media added');
       } catch (err) {
-        props.showToast('❌', 'Upload failed', err.message);
+        props.showToast(lucideIconSvg('x-circle', 24), 'Upload failed', err.message);
       }
     }
 
@@ -3018,9 +3072,9 @@ app.component('history-page', {
         await props.api.del(`/lifts/${liftId}/media`);
         const lift = lifts.value.find(l => l.id === liftId);
         if (lift) lift.media_filename = null;
-        props.showToast('✅', 'Media removed');
+        props.showToast(lucideIconSvg('check-circle', 24), 'Media removed');
       } catch (err) {
-        props.showToast('❌', 'Error', err.message);
+        props.showToast(lucideIconSvg('x-circle', 24), 'Error', err.message);
       }
     }
 
@@ -3164,7 +3218,7 @@ app.component('profile-page', {
           <div v-for="bw in bodyweight.slice(0, 10)" :key="bw.id" class="activity-item">
             <span style="font-family:'Space Grotesk';font-weight:600">{{ bw.weight }} lbs</span>
             <span class="text-secondary text-sm" style="flex:1">{{ formatDate(bw.date) }}</span>
-            <button class="btn btn-ghost btn-sm" @click="deleteBodyweight(bw.id)" title="Delete">✕</button>
+            <button class="btn btn-ghost btn-sm" @click="deleteBodyweight(bw.id)" title="Delete" v-html="$icon('x', 16)"></button>
           </div>
         </div>
       </div>
@@ -3295,7 +3349,7 @@ app.component('profile-page', {
     async function saveBio() {
       const updated = await props.api.patch('/me', { bio: bio.value || '' });
       emit('user-updated', updated);
-      props.showToast('✅', 'Bio updated');
+      props.showToast(lucideIconSvg('check-circle', 24), 'Bio updated');
     }
 
     async function saveName() {
@@ -3303,7 +3357,7 @@ app.component('profile-page', {
       if (!name) return;
       const updated = await props.api.patch('/me', { display_name: name });
       emit('user-updated', updated);
-      props.showToast('✅', 'Name updated');
+      props.showToast(lucideIconSvg('check-circle', 24), 'Name updated');
     }
 
     async function saveGoals() {
@@ -3314,13 +3368,13 @@ app.component('profile-page', {
         deadlift_goal: goalDeadlift.value || null,
       });
       emit('user-updated', updated);
-      props.showToast('✅', 'Goals updated');
+      props.showToast(lucideIconSvg('check-circle', 24), 'Goals updated');
     }
 
     async function logBodyweight() {
       if (!bwWeight.value || !bwDate.value) return;
       await props.api.post('/bodyweight', { weight: bwWeight.value, date: bwDate.value });
-      props.showToast('✅', 'Body weight logged');
+      props.showToast(lucideIconSvg('check-circle', 24), 'Body weight logged');
       bwWeight.value = null;
       // Reload bodyweight data
       bodyweight.value = await props.api.get('/bodyweight?limit=60');
@@ -3345,9 +3399,9 @@ app.component('profile-page', {
         const updated = await props.api.upload('/me/avatar', formData);
         me.value = updated;
         emit('user-updated', updated);
-        props.showToast('✅', 'Photo updated');
+        props.showToast(lucideIconSvg('check-circle', 24), 'Photo updated');
       } catch (err) {
-        props.showToast('❌', 'Upload failed', err.message);
+        props.showToast(lucideIconSvg('x-circle', 24), 'Upload failed', err.message);
       }
       e.target.value = '';
     }
@@ -3357,9 +3411,9 @@ app.component('profile-page', {
         const updated = await props.api.del('/me/avatar');
         me.value = updated;
         emit('user-updated', updated);
-        props.showToast('✅', 'Photo removed');
+        props.showToast(lucideIconSvg('check-circle', 24), 'Photo removed');
       } catch (err) {
-        props.showToast('❌', 'Error', err.message);
+        props.showToast(lucideIconSvg('x-circle', 24), 'Error', err.message);
       }
     }
 
@@ -3575,7 +3629,7 @@ app.component('notifications-page', {
         </div>
         <div v-if="filtered.length === 0" class="text-center text-dim" style="padding:2rem">No notifications yet</div>
         <div v-for="n in filtered" :key="n.id" class="notif-item" :class="{ unread: !n.read }" @click="markRead(n)">
-          <div class="notif-icon">{{ typeIcon(n.type) }}</div>
+          <div class="notif-icon" v-html="typeIcon(n.type)"></div>
           <div class="notif-body">
             <div class="notif-title">{{ n.title }}</div>
             <div v-if="n.body" class="notif-text">{{ n.body }}</div>
@@ -3619,12 +3673,12 @@ app.component('notifications-page', {
 
     function typeIcon(type) {
       switch(type) {
-        case 'reaction': return '💪';
-        case 'mention': return '💬';
-        case 'achievement': return '🏆';
-        case 'challenge': return '⚔️';
-        case 'pr': return '🥇';
-        default: return '🔔';
+        case 'reaction': return lucideIconSvg('thumbs-up', 20);
+        case 'mention': return lucideIconSvg('message-circle', 20);
+        case 'achievement': return lucideIconSvg('trophy', 20);
+        case 'challenge': return lucideIconSvg('swords', 20);
+        case 'pr': return lucideIconSvg('medal', 20);
+        default: return lucideIconSvg('bell', 20);
       }
     }
 
@@ -3699,7 +3753,7 @@ app.component('challenges-page', {
             </div>
             <div>
               <span style="font-weight:600;font-size:0.85rem">{{ c.challenger_name }}</span>
-              <span v-if="c.winner_id === c.challenger_id" class="challenge-winner-badge">🏆 Winner</span>
+              <span v-if="c.winner_id === c.challenger_id" class="challenge-winner-badge"><span v-html="$icon('trophy', 14)" style="display:inline-flex;vertical-align:middle"></span> Winner</span>
             </div>
             <span class="challenge-vs-text">VS</span>
             <div class="avatar" style="width:28px;height:28px;font-size:0.6rem" :style="avatarStyle(c.opponent_avatar_color)">
@@ -3708,7 +3762,7 @@ app.component('challenges-page', {
             </div>
             <div>
               <span style="font-weight:600;font-size:0.85rem">{{ c.opponent_name }}</span>
-              <span v-if="c.winner_id === c.opponent_id" class="challenge-winner-badge">🏆 Winner</span>
+              <span v-if="c.winner_id === c.opponent_id" class="challenge-winner-badge"><span v-html="$icon('trophy', 14)" style="display:inline-flex;vertical-align:middle"></span> Winner</span>
             </div>
           </div>
 
@@ -3804,22 +3858,22 @@ app.component('challenges-page', {
           metric: newChallenge.metric,
           duration_days: newChallenge.duration,
         });
-        props.showToast('⚔️', 'Challenge sent!');
+        props.showToast(lucideIconSvg('swords', 24), 'Challenge sent!');
         showCreate.value = false;
         newChallenge.opponent_id = null;
         load();
       } catch(e) {
-        props.showToast('❌', 'Error', e.message);
+        props.showToast(lucideIconSvg('x-circle', 24), 'Error', e.message);
       }
     }
 
     async function respond(id, accept) {
       try {
         await props.api.post('/challenges/' + id + '/respond', { accept });
-        props.showToast(accept ? '✅' : '❌', accept ? 'Challenge accepted!' : 'Challenge declined');
+        props.showToast(accept ? lucideIconSvg('check-circle', 24) : lucideIconSvg('x-circle', 24), accept ? 'Challenge accepted!' : 'Challenge declined');
         load();
       } catch(e) {
-        props.showToast('❌', 'Error', e.message);
+        props.showToast(lucideIconSvg('x-circle', 24), 'Error', e.message);
       }
     }
 
@@ -3832,6 +3886,9 @@ app.component('challenges-page', {
     };
   },
 });
+
+// Register Lucide icon helper as global property
+app.config.globalProperties.$icon = lucideIconSvg;
 
 // Mount
 app.mount('#vue-app');
