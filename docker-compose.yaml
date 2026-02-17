@@ -1,0 +1,18 @@
+services:
+  shredded:
+    build: .
+    container_name: shredded
+    restart: unless-stopped
+    volumes:
+      - shredded-data:/app/data
+    networks:
+      - traefik-proxy
+    labels:
+      - "traefik.http.services.shredded.loadbalancer.server.port=3000"
+
+volumes:
+  shredded-data:
+
+networks:
+  traefik-proxy:
+    external: true

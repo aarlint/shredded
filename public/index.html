@@ -1,0 +1,3840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#c8a44e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2308080a' width='100' height='100' rx='20'/><text x='50' y='55' text-anchor='middle' dy='.1em' fill='%23c8a44e' font-family='sans-serif' font-weight='bold' font-size='28'>1K</text></svg>">
+<title>1000LB CLUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-deep: #08080a;
+  --bg-surface: #101014;
+  --bg-card: #16161d;
+  --bg-card-hover: #1e1e28;
+  --bg-input: #0c0c10;
+  --border: #23232f;
+  --border-hover: #33334a;
+  --text-primary: #f0eff4;
+  --text-secondary: #8b8a95;
+  --text-dim: #4a4955;
+  --red: #e54545;
+  --red-dim: #3d1515;
+  --gold: #c8a44e;
+  --gold-dim: #4a3a15;
+  --blue: #4e8cff;
+  --blue-dim: #152a55;
+  --green: #3ec97a;
+  --green-dim: #0f3320;
+  --squat-color: var(--blue);
+  --bench-color: var(--red);
+  --deadlift-color: var(--gold);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+}
+
+html { font-size: 16px; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(200,164,78,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(78,140,255,0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,8,10,0.75);
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border-bottom: 1px solid rgba(200,164,78,0.1);
+  padding: 0 1.5rem;
+}
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+}
+.nav-brand {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--gold), #e8d5a0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.nav-links { display: flex; gap: 0.25rem; }
+.nav-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%; right: 50%;
+  height: 2px;
+  background: var(--gold);
+  transition: all 0.2s;
+  border-radius: 1px;
+}
+.nav-links a:hover { color: var(--text-primary); }
+.nav-links a.active {
+  color: var(--text-primary);
+}
+.nav-links a.active::after, .nav-links a:hover::after {
+  left: 0.75rem; right: 0.75rem;
+}
+.nav-user {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.8rem; color: var(--text-secondary);
+}
+.avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--blue));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.75rem; color: #fff;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(200,164,78,0.2);
+}
+.avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.avatar-upload {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  margin: 0 auto 0.75rem;
+}
+.avatar-upload img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.avatar-upload .avatar-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s;
+  font-size: 0.7rem; color: #fff; font-weight: 600;
+}
+.avatar-upload:hover .avatar-overlay { opacity: 1; }
+.avatar-upload input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.hamburger {
+  display: none; background: none; border: none; color: var(--text-primary);
+  font-size: 1.5rem; cursor: pointer; padding: 0.25rem;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  background: rgba(22,22,29,0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.card:hover { border-color: var(--border-hover); box-shadow: 0 4px 24px rgba(0,0,0,0.2); }
+.card-header {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(200,164,78,0.15);
+}
+
+.progress-bar {
+  height: 8px;
+  background: var(--bg-input);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--blue), var(--gold));
+  transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+}
+.progress-fill.complete {
+  background: linear-gradient(90deg, var(--green), #5edb90);
+  box-shadow: 0 0 12px rgba(62,201,122,0.4);
+}
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold), #b8943e);
+  color: #0a0a0c;
+  font-weight: 700;
+}
+.btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(200,164,78,0.25); }
+.btn-secondary {
+  background: rgba(22,22,29,0.6);
+  backdrop-filter: blur(12px);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--border-hover); background: var(--bg-card-hover); }
+.btn-ghost {
+  background: transparent; color: var(--text-secondary); border: none;
+}
+.btn-ghost:hover { color: var(--text-primary); }
+.btn-danger { background: var(--red-dim); color: var(--red); }
+.btn-danger:hover { background: var(--red); color: #fff; }
+.btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+.btn-lg {
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.btn-block { width: 100%; }
+
+input, select, textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  padding: 0.625rem 0.75rem;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 0.375rem;
+}
+
+.lift-badge {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.lift-badge.squat { background: rgba(78,140,255,0.12); color: var(--blue); }
+.lift-badge.bench { background: rgba(229,69,69,0.12); color: var(--red); }
+.lift-badge.deadlift { background: rgba(200,164,78,0.12); color: var(--gold); }
+
+.pr-badge {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(212,169,78,0.2);
+  color: var(--gold);
+  animation: prPulse 2s ease-in-out infinite;
+}
+@keyframes prPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212,169,78,0.3); }
+  50% { box-shadow: 0 0 8px 2px rgba(212,169,78,0.2); }
+}
+
+.sus-badge {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(168,85,247,0.2);
+  color: #a855f7;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.fng-badge {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(236,72,153,0.2);
+  color: #ec4899;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  animation: fngPulse 1.5s ease-in-out infinite;
+}
+@keyframes fngPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(236,72,153,0.3); }
+  50% { box-shadow: 0 0 8px 2px rgba(236,72,153,0.2); }
+}
+
+.react-btn {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.react-btn .react-count { font-family: 'Space Grotesk', sans-serif; }
+.react-btn.down:hover { border-color: #ec4899; color: #ec4899; }
+.react-btn.down.active { border-color: #ec4899; color: #ec4899; background: rgba(236,72,153,0.1); }
+.react-btn.up:hover { border-color: var(--green); color: var(--green); }
+.react-btn.up.active { border-color: var(--green); color: var(--green); background: rgba(92,184,92,0.1); }
+.react-btns { display: inline-flex; gap: 0.25rem; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-1 { gap: 1rem; }
+.mb-1 { margin-bottom: 1rem; }
+.mb-05 { margin-bottom: 0.5rem; }
+.mt-1 { margin-top: 1rem; }
+.text-center { text-align: center; }
+.text-dim { color: var(--text-dim); }
+.text-secondary { color: var(--text-secondary); }
+.text-sm { font-size: 0.8rem; }
+
+.stat-big {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-top: 0.25rem;
+}
+
+.lb-row {
+  display: grid;
+  grid-template-columns: 40px 1fr repeat(4, 80px) 120px;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.lb-row:hover { background: var(--bg-card-hover); }
+.lb-row .rank {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-align: center;
+}
+.lb-row .rank.gold { color: var(--gold); }
+.lb-row .rank.silver { color: #8a9a8e; }
+.lb-row .rank.bronze { color: #a07840; }
+.lb-row .user-info { display: flex; align-items: center; gap: 0.75rem; }
+.lb-row .lift-val {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+}
+.lb-row .total-col {
+  text-align: right;
+}
+.lb-row .total-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.lb-header {
+  display: grid;
+  grid-template-columns: 40px 1fr repeat(4, 80px) 120px;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+}
+.lb-header span:nth-child(n+3) { text-align: center; }
+.lb-header span:last-child { text-align: right; }
+
+.club-badge {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.15rem 0.5rem; border-radius: var(--radius-sm);
+  font-size: 0.6rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  background: linear-gradient(135deg, rgba(200,164,78,0.2), rgba(200,164,78,0.1));
+  color: var(--gold);
+  border: 1px solid rgba(200,164,78,0.3);
+}
+
+.activity-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-weight {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem; font-weight: 600;
+}
+.activity-meta { font-size: 0.75rem; color: var(--text-dim); }
+
+.lift-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+.lift-option {
+  padding: 1.25rem 1rem;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+.lift-option:hover { border-color: var(--border-hover); }
+.lift-option.selected.squat { border-color: var(--blue); background: rgba(78,140,255,0.08); box-shadow: 0 0 24px rgba(78,140,255,0.1); }
+.lift-option.selected.bench { border-color: var(--red); background: rgba(229,69,69,0.08); box-shadow: 0 0 24px rgba(229,69,69,0.1); }
+.lift-option.selected.deadlift { border-color: var(--gold); background: rgba(200,164,78,0.08); box-shadow: 0 0 24px rgba(200,164,78,0.1); }
+.lift-option-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.lift-option-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem; font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.weight-input-wrap {
+  display: flex; align-items: center; gap: 0.75rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+.weight-input-wrap button {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 1.25rem; font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.weight-input-wrap button:hover { background: var(--bg-card-hover); border-color: var(--border-hover); }
+.weight-input-wrap input {
+  width: 140px;
+  text-align: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  -moz-appearance: textfield;
+}
+.weight-input-wrap input::-webkit-inner-spin-button,
+.weight-input-wrap input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.weight-unit {
+  font-size: 1rem; color: var(--text-dim);
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: 1px;
+}
+
+.tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; }
+.tab {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem; font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent; border: none;
+  cursor: pointer; transition: all 0.15s;
+}
+.tab:hover { color: var(--text-primary); }
+.tab.active { background: var(--bg-card); color: var(--text-primary); }
+
+.achievement-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+.achievement-card {
+  text-align: center;
+  padding: 1rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: all 0.2s;
+}
+.achievement-card.locked { opacity: 0.35; filter: grayscale(1); }
+.achievement-card.unlocked {
+  border-color: rgba(212,169,78,0.3);
+  box-shadow: 0 0 15px rgba(212,169,78,0.08);
+}
+.achievement-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.achievement-label { font-size: 0.75rem; font-weight: 700; }
+.achievement-desc { font-size: 0.65rem; color: var(--text-dim); margin-top: 0.2rem; }
+
+.toast-container {
+  position: fixed; top: 80px; right: 1.5rem;
+  z-index: 200; display: flex; flex-direction: column; gap: 0.5rem;
+}
+.toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  display: flex; align-items: center; gap: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  animation: toastIn 0.3s ease;
+  min-width: 280px;
+}
+.toast.pr { border-color: var(--gold); }
+.toast.achievement { border-color: var(--green); }
+.toast.mention { border-color: var(--blue); }
+.toast-icon { font-size: 1.5rem; }
+.toast-text { font-size: 0.85rem; font-weight: 600; }
+.toast-sub { font-size: 0.7rem; color: var(--text-secondary); }
+@keyframes toastIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.confetti-piece {
+  position: fixed;
+  width: 8px; height: 8px;
+  z-index: 300;
+  animation: confettiFall 1.5s ease forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.chart-wrap { position: relative; height: 280px; }
+
+.lift-log-item {
+  display: grid;
+  grid-template-columns: 90px 80px 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.lift-log-item:last-child { border-bottom: none; }
+
+.profile-section { margin-bottom: 2rem; }
+.inline-edit {
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.inline-edit input {
+  font-size: 1.5rem; font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
+  background: transparent; border: 1px solid transparent;
+  padding: 0.25rem 0.5rem; width: auto;
+}
+.inline-edit input:focus { border-color: var(--border); background: var(--bg-input); }
+
+.circle-progress {
+  position: relative;
+  width: 160px; height: 160px;
+  margin: 0 auto;
+}
+.circle-progress svg { transform: rotate(-90deg); }
+.circle-progress .track { stroke: var(--border); fill: none; stroke-width: 8; }
+.circle-progress .fill-ring { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+.circle-progress .center-text {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.mobile-only { display: none; }
+@media (max-width: 768px) {
+  .hamburger { display: block; }
+  .nav-links { display: none; position: absolute; top: 60px; left: 0; right: 0; background: var(--bg-deep); border-bottom: 1px solid var(--border); flex-direction: column; padding: 0.5rem; }
+  .nav-links.open { display: flex; }
+  .nav-user .user-name-text { display: none; }
+  .desktop-only { display: none; }
+  .mobile-only { display: block; }
+  .lb-row { grid-template-columns: 32px 1fr 60px 60px 60px 80px; font-size: 0.85rem; gap: 0.5rem; padding: 0.75rem 0.5rem; }
+  .lb-header { grid-template-columns: 32px 1fr 60px 60px 60px 80px; gap: 0.5rem; }
+  .lb-row .lift-val { font-size: 0.95rem; }
+  .lb-row .total-num { font-size: 1.1rem; }
+  .lift-selector { grid-template-columns: 1fr; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .lift-log-item { grid-template-columns: 70px 70px 1fr auto; font-size: 0.8rem; }
+  .stat-big { font-size: 2rem; }
+  main { padding: 1rem; }
+}
+@media (max-width: 480px) {
+  .lb-row { grid-template-columns: 28px 1fr 50px 50px 50px 70px; }
+  .lb-header { grid-template-columns: 28px 1fr 50px 50px 50px 70px; }
+}
+
+.media-upload {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+.media-upload:hover, .media-upload.drag-over {
+  border-color: var(--gold);
+  background: rgba(200,164,78,0.04);
+}
+.media-upload-icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
+.media-upload-text { font-size: 0.75rem; color: var(--text-dim); }
+.media-upload input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+
+.media-preview {
+  position: relative;
+  margin-top: 0.75rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+}
+.media-preview img, .media-preview video {
+  display: block;
+  width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  background: #000;
+}
+.media-preview-remove {
+  position: absolute;
+  top: 0.5rem; right: 0.5rem;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.media-preview-remove:hover { background: var(--red); }
+
+.media-thumb {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  display: inline-block;
+  margin-top: 0.4rem;
+}
+.media-thumb:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.media-thumb img, .media-thumb video {
+  display: block;
+  max-width: 200px;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+.media-thumb .video-play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.3);
+  font-size: 2rem;
+  pointer-events: none;
+}
+.media-thumb-sm img, .media-thumb-sm video {
+  max-width: 120px;
+  max-height: 80px;
+}
+
+.add-media-btn {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px dashed var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.add-media-btn:hover { color: var(--text-secondary); border-color: var(--border-hover); }
+.add-media-btn input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.add-media-wrap { position: relative; display: inline-flex; }
+
+.remove-media-btn {
+  position: absolute;
+  top: 2px; right: 2px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  border: none;
+  font-size: 0.65rem;
+  cursor: pointer;
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 2;
+}
+.media-thumb:hover .remove-media-btn { display: flex; }
+.remove-media-btn:hover { background: var(--red); }
+
+.media-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: fadeIn 0.2s ease;
+}
+.media-lightbox img, .media-lightbox video {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  cursor: default;
+}
+.media-lightbox-close {
+  position: absolute;
+  top: 1rem; right: 1.5rem;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.media-lightbox-close:hover { background: rgba(255,255,255,0.2); }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* App layout with chat sidebar */
+.app-layout {
+  display: flex;
+  min-height: calc(100vh - 61px);
+  position: relative;
+  z-index: 1;
+}
+.app-main {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+}
+.chat-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 61px;
+  height: calc(100vh - 61px);
+  border-left: 1px solid rgba(200,164,78,0.1);
+  display: flex;
+  flex-direction: column;
+  background: rgba(16,16,20,0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 1;
+}
+.chat-header {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.chat-header .chat-expire {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-dim);
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.chat-msg {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.chat-msg.own {
+  flex-direction: row-reverse;
+}
+.chat-msg .avatar {
+  width: 24px; height: 24px;
+  font-size: 0.55rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.chat-msg-body {
+  min-width: 0;
+}
+.chat-msg.own .chat-msg-body {
+  text-align: right;
+}
+.chat-msg-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.chat-msg-name .chat-msg-time {
+  font-weight: 400;
+  color: var(--text-dim);
+  margin-left: 0.4rem;
+}
+.chat-msg-text {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+.chat-input-wrap {
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 0.5rem;
+}
+.chat-input-wrap input {
+  flex: 1;
+  font-size: 0.8rem;
+  padding: 0.5rem 0.75rem;
+}
+.chat-input-wrap button {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--gold), #b8943e);
+  color: #0a0a0c;
+  border: none;
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: filter 0.15s;
+  white-space: nowrap;
+}
+.chat-input-wrap button:hover { filter: brightness(1.1); }
+.chat-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* @mention autocomplete */
+.chat-input-container {
+  position: relative;
+}
+.mention-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.4);
+}
+.mention-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.1s;
+}
+.mention-option:hover, .mention-option.active {
+  background: var(--bg-card-hover);
+}
+.mention-option .avatar {
+  width: 20px; height: 20px;
+  font-size: 0.5rem;
+}
+.chat-mention {
+  color: var(--blue);
+  font-weight: 600;
+}
+
+/* Mobile chat toggle */
+.chat-toggle-btn {
+  display: none;
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #b8943e);
+  color: #0a0a0c;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  z-index: 150;
+  box-shadow: 0 4px 16px rgba(200,164,78,0.3);
+  transition: transform 0.15s;
+}
+.chat-toggle-btn:hover { transform: scale(1.05); }
+
+@media (max-width: 1200px) {
+  .chat-sidebar { display: none; }
+  .chat-sidebar.mobile-open {
+    display: flex;
+    position: fixed;
+    top: 61px;
+    right: 0;
+    bottom: 0;
+    width: 320px;
+    z-index: 150;
+    box-shadow: -4px 0 24px rgba(0,0,0,0.5);
+  }
+  .chat-toggle-btn { display: flex; align-items: center; justify-content: center; }
+}
+@media (max-width: 480px) {
+  .chat-sidebar.mobile-open { width: 100%; }
+}
+/* ── Phase 2: Animations & Micro-interactions ── */
+
+/* Card hover lift */
+.card { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+.card:hover { transform: translateY(-2px); }
+
+/* Button press */
+.btn:active { transform: scale(0.97); }
+.btn-primary:active { transform: scale(0.97); box-shadow: none; }
+
+/* Page fade-up on mount — applied via Vue */
+.page-enter {
+  animation: fadeUp 0.35s ease-out;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Skeleton loading shimmer */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-hover) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-card {
+  height: 120px;
+  border-radius: var(--radius);
+}
+.skeleton-row {
+  height: 48px;
+  margin-bottom: 0.5rem;
+}
+.skeleton-text {
+  height: 14px;
+  width: 60%;
+  margin-bottom: 0.5rem;
+}
+
+/* Toast slide-in/out */
+.toast {
+  animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes toastSlideIn {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Progress ring animated stroke */
+.circle-progress .fill-ring {
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Confetti gold sparkle */
+.confetti-sparkle {
+  position: fixed;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+  z-index: 301;
+  animation: sparkle 0.8s ease-out forwards;
+  box-shadow: 0 0 6px rgba(200,164,78,0.6);
+}
+@keyframes sparkle {
+  0% { transform: scale(0); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 1; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+/* Lift option hover */
+.lift-option { transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+.lift-option:hover { transform: translateY(-2px); }
+
+/* Achievement card unlock glow */
+.achievement-card.unlocked {
+  transition: all 0.3s;
+}
+.achievement-card.unlocked:hover {
+  box-shadow: 0 0 20px rgba(200,164,78,0.15);
+  transform: translateY(-2px);
+}
+
+/* PR badge enhanced pulse */
+@keyframes prPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200,164,78,0.35); }
+  50% { box-shadow: 0 0 12px 3px rgba(200,164,78,0.2); }
+}
+
+/* SUS badge pulse */
+.sus-badge { transition: all 0.2s; }
+
+/* FNG badge enhanced pulse */
+@keyframes fngPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(236,72,153,0.35); }
+  50% { box-shadow: 0 0 12px 3px rgba(236,72,153,0.2); }
+}
+
+/* Leaderboard row hover */
+.lb-row { transition: background 0.2s, transform 0.15s; }
+.lb-row:hover { transform: translateX(4px); }
+
+/* Input focus glow */
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(200,164,78,0.1);
+  border-color: var(--gold);
+}
+
+/* Activity item hover */
+.activity-item { transition: background 0.15s; }
+.activity-item:hover { background: rgba(30,30,40,0.5); }
+
+/* Lift log success checkmark */
+@keyframes checkPop {
+  0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+  50% { transform: scale(1.2) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.check-anim {
+  display: inline-block;
+  animation: checkPop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Gamification: Tier badges ── */
+.tier-badge {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.15rem 0.5rem; border-radius: var(--radius-sm);
+  font-size: 0.6rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.tier-recruit { background: rgba(100,100,110,0.15); color: #7a7a85; }
+.tier-iron { background: linear-gradient(135deg, rgba(180,180,195,0.15), rgba(140,140,155,0.1)); color: #b0b0c0; }
+.tier-steel { background: linear-gradient(135deg, rgba(78,140,255,0.15), rgba(78,140,255,0.08)); color: #6ea0ff; border: 1px solid rgba(78,140,255,0.2); }
+.tier-titanium { background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(168,85,247,0.08)); color: #b87aff; border: 1px solid rgba(168,85,247,0.2); }
+.tier-diamond { background: linear-gradient(135deg, rgba(0,220,255,0.15), rgba(0,220,255,0.08)); color: #00dcff; border: 1px solid rgba(0,220,255,0.2); animation: diamondShine 3s ease-in-out infinite; }
+@keyframes diamondShine {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,220,255,0.15); }
+  50% { box-shadow: 0 0 10px 2px rgba(0,220,255,0.1); }
+}
+.tier-mythic {
+  background: linear-gradient(135deg, rgba(200,164,78,0.2), rgba(200,164,78,0.1));
+  color: var(--gold);
+  border: 1px solid rgba(200,164,78,0.3);
+  animation: mythicGlow 2.5s ease-in-out infinite;
+}
+@keyframes mythicGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200,164,78,0.2); }
+  50% { box-shadow: 0 0 14px 3px rgba(200,164,78,0.15); }
+}
+
+/* XP bar */
+.xp-bar {
+  height: 4px;
+  background: var(--bg-input);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+.xp-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--gold), #e8d5a0);
+  transition: width 0.8s ease;
+}
+
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+.stat-card {
+  background: rgba(22,22,29,0.5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: center;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.stat-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+.stat-card-icon { font-size: 1.25rem; margin-bottom: 0.35rem; }
+.stat-card-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.stat-card-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-top: 0.25rem;
+}
+
+/* Streak fire */
+.streak-fire {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  font-size: 0.75rem; font-weight: 600;
+  color: #ff8c42;
+}
+
+/* Weekly challenge card */
+.challenge-card {
+  background: linear-gradient(135deg, rgba(200,164,78,0.06), rgba(78,140,255,0.04));
+  border: 1px solid rgba(200,164,78,0.15);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+}
+.challenge-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+.challenge-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+.challenge-progress {
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.challenge-progress-bar {
+  flex: 1; height: 6px;
+  background: var(--bg-input);
+  border-radius: 3px; overflow: hidden;
+}
+.challenge-progress-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.challenge-progress-text {
+  font-size: 0.7rem; font-weight: 600;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* Sparkline canvas */
+.sparkline-wrap {
+  display: inline-block;
+  width: 60px; height: 24px;
+  vertical-align: middle;
+}
+
+/* Heatmap */
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
+}
+.heatmap-cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--bg-input);
+  transition: background 0.15s;
+}
+.heatmap-cell.lvl-1 { background: rgba(62,201,122,0.2); }
+.heatmap-cell.lvl-2 { background: rgba(62,201,122,0.4); }
+.heatmap-cell.lvl-3 { background: rgba(62,201,122,0.6); }
+.heatmap-cell.lvl-4 { background: rgba(62,201,122,0.85); }
+.heatmap-months {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.heatmap-month {
+  font-size: 0.55rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+/* Emoji reaction bar */
+.reaction-bar {
+  display: flex; gap: 0.25rem; flex-wrap: wrap; margin-top: 0.35rem;
+}
+.reaction-btn {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text-secondary);
+}
+.reaction-btn:hover { border-color: var(--border-hover); background: var(--bg-card-hover); }
+.reaction-btn.active { border-color: var(--gold); background: rgba(200,164,78,0.1); }
+.reaction-btn .reaction-count {
+  font-size: 0.65rem; font-weight: 600;
+}
+.reaction-add {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  background: transparent;
+  border: 1px dashed var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text-dim);
+  position: relative;
+}
+.reaction-add:hover { border-color: var(--border-hover); color: var(--text-secondary); }
+.reaction-picker {
+  position: absolute;
+  bottom: 100%; left: 50%; transform: translateX(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem;
+  display: flex; gap: 0.15rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  margin-bottom: 4px;
+  z-index: 10;
+}
+.reaction-picker button {
+  background: none; border: none; cursor: pointer;
+  font-size: 1.1rem; padding: 0.2rem 0.3rem;
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+.reaction-picker button:hover { background: var(--bg-card-hover); }
+
+/* Bio field */
+.bio-field {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.4;
+}
+.bio-edit textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-size: 0.8rem;
+}
+
+/* Inline chat images */
+.chat-inline-img {
+  display: block;
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: var(--radius-sm);
+  margin-top: 0.25rem;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.chat-inline-img:hover { transform: scale(1.02); }
+
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .heatmap-grid { grid-template-columns: repeat(7, 1fr); }
+}
+
+/* ── Notifications Badge ── */
+.notif-badge {
+  position: relative;
+}
+.notif-badge .badge-count {
+  position: absolute;
+  top: -4px; right: -6px;
+  min-width: 16px; height: 16px;
+  border-radius: 8px;
+  background: var(--red);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+}
+.notif-item {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.notif-item:hover { background: var(--bg-card-hover); }
+.notif-item.unread { background: rgba(200,164,78,0.04); border-left: 3px solid var(--gold); }
+.notif-item:last-child { border-bottom: none; }
+.notif-icon { font-size: 1.25rem; flex-shrink: 0; margin-top: 2px; }
+.notif-body { flex: 1; min-width: 0; }
+.notif-title { font-size: 0.85rem; font-weight: 600; }
+.notif-text { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.1rem; }
+.notif-time { font-size: 0.65rem; color: var(--text-dim); margin-top: 0.2rem; }
+.notif-filter-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+/* ── PR Timeline ── */
+.pr-timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+.pr-timeline::before {
+  content: '';
+  position: absolute;
+  left: 12px; top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--gold), var(--blue), var(--gold));
+  border-radius: 1px;
+}
+.timeline-item {
+  position: relative;
+  padding: 0.75rem 0;
+  padding-left: 1rem;
+}
+.timeline-dot {
+  position: absolute;
+  left: -2rem; top: 0.85rem;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: var(--bg-deep);
+  z-index: 1;
+}
+.timeline-dot.achievement {
+  border-color: var(--green);
+  background: var(--green);
+}
+.timeline-content {
+  background: rgba(22,22,29,0.5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  transition: border-color 0.15s;
+}
+.timeline-content:hover { border-color: var(--border-hover); }
+.timeline-date {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Challenges ── */
+.challenge-item {
+  background: rgba(22,22,29,0.5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  transition: border-color 0.15s;
+}
+.challenge-item:hover { border-color: var(--border-hover); }
+.challenge-item.pending { border-left: 3px solid var(--gold); }
+.challenge-item.active { border-left: 3px solid var(--green); }
+.challenge-item.completed { border-left: 3px solid var(--blue); }
+.challenge-vs {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.challenge-vs-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+.challenge-score-bar {
+  display: flex; gap: 2px; height: 8px; border-radius: 4px; overflow: hidden;
+  background: var(--bg-input);
+}
+.challenge-score-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.challenge-type-badge {
+  display: inline-flex; padding: 0.15rem 0.5rem;
+  border-radius: 4px; font-size: 0.65rem; font-weight: 600;
+  background: rgba(78,140,255,0.1); color: var(--blue);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.challenge-winner-badge {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  padding: 0.15rem 0.5rem; border-radius: 4px;
+  font-size: 0.65rem; font-weight: 700;
+  background: rgba(200,164,78,0.2); color: var(--gold);
+}
+.challenge-create-form {
+  display: grid; gap: 0.75rem;
+}
+
+/* ── Reps stepper ── */
+.reps-wrap {
+  display: flex; align-items: center; gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+.reps-wrap button {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 1rem; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.reps-wrap button:hover { background: var(--bg-card-hover); border-color: var(--border-hover); }
+.reps-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  min-width: 40px;
+  text-align: center;
+}
+.reps-label {
+  font-size: 0.7rem; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.e1rm-display {
+  text-align: center;
+  padding: 0.5rem;
+  margin-bottom: 0.75rem;
+  border-radius: var(--radius-sm);
+  background: rgba(200,164,78,0.06);
+  border: 1px solid rgba(200,164,78,0.1);
+}
+.e1rm-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gold);
+}
+.e1rm-label {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.pr-hint {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+.pr-hint strong { color: var(--text-secondary); }
+
+/* ── Mobile Bottom Nav ── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: rgba(8,8,10,0.92);
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border-top: 1px solid rgba(200,164,78,0.1);
+  z-index: 200;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.bottom-nav-inner {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 64px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.bottom-nav-item {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px;
+  padding: 0.25rem 0.75rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: color 0.15s;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-nav-item .nav-icon { font-size: 1.25rem; line-height: 1; }
+.bottom-nav-item.active { color: var(--gold); }
+.bottom-nav-item:hover { color: var(--text-secondary); }
+.bottom-nav-item .badge-count {
+  position: absolute;
+  top: 0; right: 0.25rem;
+  min-width: 14px; height: 14px;
+  border-radius: 7px;
+  background: var(--red);
+  color: #fff;
+  font-size: 0.5rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 3px;
+}
+
+/* DOTS toggle */
+.dots-toggle {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.7rem; color: var(--text-dim);
+  cursor: pointer;
+}
+.dots-toggle input { display: none; }
+.dots-toggle .toggle-track {
+  width: 28px; height: 14px;
+  border-radius: 7px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: background 0.2s;
+}
+.dots-toggle .toggle-thumb {
+  position: absolute;
+  top: 1px; left: 1px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: all 0.2s;
+}
+.dots-toggle input:checked ~ .toggle-track { background: rgba(200,164,78,0.2); border-color: var(--gold); }
+.dots-toggle input:checked ~ .toggle-track .toggle-thumb { left: 15px; background: var(--gold); }
+.dots-info-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.55rem; font-weight: 700;
+  cursor: pointer;
+  margin-left: 2px;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.dots-info-btn:hover { background: rgba(200,164,78,0.15); border-color: var(--gold); color: var(--gold); }
+
+/* DOTS info modal */
+.dots-modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.15s ease;
+  padding: 1rem;
+}
+.dots-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-width: 420px; width: 100%;
+  padding: 1.5rem;
+  position: relative;
+  animation: slideUp 0.2s ease;
+}
+.dots-modal h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: var(--gold);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.dots-modal p {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.dots-modal .dots-formula {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--text);
+  margin: 0.6rem 0;
+  text-align: center;
+}
+.dots-modal .dots-tiers {
+  display: grid; grid-template-columns: auto 1fr; gap: 0.2rem 0.75rem;
+  font-size: 0.75rem;
+  margin: 0.6rem 0;
+}
+.dots-modal .dots-tiers .tier-score { color: var(--gold); font-weight: 600; }
+.dots-modal .dots-tiers .tier-label { color: var(--text-dim); }
+.dots-modal-close {
+  position: absolute; top: 0.75rem; right: 0.75rem;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.9rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.dots-modal-close:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* PWA install banner */
+.pwa-install-banner {
+  position: fixed;
+  bottom: 80px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 0.75rem 1.25rem;
+  display: flex; align-items: center; gap: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  z-index: 300;
+  animation: fadeUp 0.35s ease-out;
+  max-width: 320px;
+}
+
+@media (max-width: 768px) {
+  .bottom-nav { display: block; }
+  /* Hide top nav links on mobile, show bottom nav instead */
+  nav .nav-links { display: none !important; }
+  .hamburger { display: none !important; }
+  main { padding-bottom: 80px; }
+  .chat-toggle-btn { bottom: 80px; }
+  .pwa-install-banner { bottom: 140px; }
+}
+
+@media (min-width: 769px) {
+  .bottom-nav { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="vue-app">
+  <!-- Nav -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-brand">1000LB CLUB</div>
+      <button class="hamburger" @click="mobileNavOpen = !mobileNavOpen" aria-label="Menu">&#9776;</button>
+      <div class="nav-links" :class="{ open: mobileNavOpen }">
+        <a href="#dashboard" :class="{ active: route === 'dashboard' }" @click="mobileNavOpen = false">Dashboard</a>
+        <a href="#log" :class="{ active: route === 'log' }" @click="mobileNavOpen = false">Log Lift</a>
+        <a href="#history" :class="{ active: route === 'history' }" @click="mobileNavOpen = false">History</a>
+        <a href="#notifications" :class="{ active: route === 'notifications' }" @click="mobileNavOpen = false" class="notif-badge">Alerts<span v-if="unreadCount > 0" class="badge-count">{{ unreadCount > 9 ? '9+' : unreadCount }}</span></a>
+        <a href="#challenges" :class="{ active: route === 'challenges' }" @click="mobileNavOpen = false">H2H</a>
+        <a href="#profile" :class="{ active: route === 'profile' }" @click="mobileNavOpen = false">Profile</a>
+      </div>
+      <div class="nav-user" v-if="currentUser">
+        <span class="user-name-text">{{ currentUser.display_name }}</span>
+        <div class="avatar" :style="avatarStyle(currentUser.avatar_color)"><img v-if="currentUser.avatar_url" :src="avatarUrl(currentUser.avatar_url)"><template v-else>{{ initials(currentUser.display_name) }}</template></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Toasts -->
+  <div class="toast-container">
+    <div v-for="t in toasts" :key="t.id" class="toast" :class="t.cls || ''">
+      <span class="toast-icon">{{ t.icon }}</span>
+      <div>
+        <div class="toast-text">{{ t.text }}</div>
+        <div v-if="t.sub" class="toast-sub">{{ t.sub }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <main v-if="initError">
+    <div class="card text-center" style="margin-top:4rem;padding:3rem">
+      <h2>Unable to connect</h2>
+      <p class="text-secondary mt-1">Make sure you are authenticated through Cloudflare Access.</p>
+    </div>
+  </main>
+
+  <!-- Loading state -->
+  <main v-else-if="!currentUser">
+    <div class="text-center text-secondary" style="padding:3rem">Loading...</div>
+  </main>
+
+  <!-- App with chat sidebar -->
+  <div v-else class="app-layout">
+    <div class="app-main">
+      <main>
+        <div :key="route + (routeParam || '')" class="page-enter">
+        <dashboard-page v-if="route === 'dashboard'" :current-user="currentUser" :show-toast="addToast" :api="api" @vote="handleVote"></dashboard-page>
+        <log-page v-else-if="route === 'log'" :current-user="currentUser" :show-toast="addToast" :api="api" @lift-logged="onLiftLogged"></log-page>
+        <history-page v-else-if="route === 'history'" :user-id="currentUser.id" :current-user="currentUser" :is-own="true" :show-toast="addToast" :api="api" @vote="handleVote"></history-page>
+        <history-page v-else-if="route === 'user'" :user-id="routeParam" :current-user="currentUser" :is-own="false" :show-toast="addToast" :api="api" @vote="handleVote"></history-page>
+        <notifications-page v-else-if="route === 'notifications'" :current-user="currentUser" :api="api" @read="fetchUnreadCount"></notifications-page>
+        <challenges-page v-else-if="route === 'challenges'" :current-user="currentUser" :show-toast="addToast" :api="api"></challenges-page>
+        <profile-page v-else-if="route === 'profile'" :current-user="currentUser" :show-toast="addToast" :api="api" @user-updated="onUserUpdated"></profile-page>
+        <dashboard-page v-else :current-user="currentUser" :show-toast="addToast" :api="api" @vote="handleVote"></dashboard-page>
+        </div>
+      </main>
+    </div>
+    <chat-panel :current-user="currentUser" :api="api" :class="{ 'mobile-open': chatOpen }" class="chat-sidebar"></chat-panel>
+    <button class="chat-toggle-btn" @click="chatOpen = !chatOpen" :title="chatOpen ? 'Close chat' : 'Open chat'">
+      {{ chatOpen ? '✕' : '💬' }}
+    </button>
+  </div>
+
+  <!-- Mobile bottom nav -->
+  <nav class="bottom-nav" v-if="currentUser">
+    <div class="bottom-nav-inner">
+      <a href="#dashboard" class="bottom-nav-item" :class="{ active: route === 'dashboard' }">
+        <span class="nav-icon">🏠</span>Home
+      </a>
+      <a href="#log" class="bottom-nav-item" :class="{ active: route === 'log' }">
+        <span class="nav-icon">➕</span>Log
+      </a>
+      <a href="#history" class="bottom-nav-item" :class="{ active: route === 'history' }">
+        <span class="nav-icon">📊</span>History
+      </a>
+      <a href="#notifications" class="bottom-nav-item" :class="{ active: route === 'notifications' }">
+        <span class="nav-icon">🔔</span>Alerts
+        <span v-if="unreadCount > 0" class="badge-count">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+      </a>
+      <a href="#profile" class="bottom-nav-item" :class="{ active: route === 'profile' }">
+        <span class="nav-icon">👤</span>Profile
+      </a>
+    </div>
+  </nav>
+
+  <!-- PWA install prompt -->
+  <div v-if="showInstallPrompt" class="pwa-install-banner">
+    <span style="font-size:1.5rem">📲</span>
+    <div style="flex:1">
+      <div style="font-weight:600;font-size:0.85rem">Install App</div>
+      <div style="font-size:0.7rem;color:var(--text-secondary)">Add to home screen for the best experience</div>
+    </div>
+    <button class="btn btn-primary btn-sm" @click="installPWA">Install</button>
+    <button class="btn btn-ghost btn-sm" @click="showInstallPrompt = false" style="padding:0.25rem">✕</button>
+  </div>
+</div>
+
+<script>
+const { createApp, ref, reactive, computed, watch, onMounted, onUnmounted, nextTick, shallowRef } = Vue;
+
+// ── API helper ──
+const api = {
+  async get(url) { const r = await fetch('/api' + url); if (!r.ok) throw new Error(r.statusText); return r.json(); },
+  async post(url, body) { const r = await fetch('/api' + url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error(r.statusText); return r.json(); },
+  async patch(url, body) { const r = await fetch('/api' + url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error(r.statusText); return r.json(); },
+  async del(url) { const r = await fetch('/api' + url, { method: 'DELETE' }); if (!r.ok) throw new Error(r.statusText); return r.json(); },
+  async upload(url, formData) { const r = await fetch('/api' + url, { method: 'POST', body: formData }); if (!r.ok) throw new Error(r.statusText); return r.json(); }
+};
+
+// ── Helpers ──
+function today() { return new Date().toISOString().split('T')[0]; }
+function getInitials(name) {
+  if (!name) return '';
+  return name.split(/[\s._-]+/).map(w => w[0]).join('').substring(0, 2).toUpperCase();
+}
+function formatDate(d) {
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+function formatDateFull(d) {
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function timeAgo(iso) {
+  const d = new Date(iso + 'Z');
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
+}
+function liftIcon(type) {
+  return type === 'squat' ? '🦵' : type === 'bench' ? '🏋️' : '💀';
+}
+function isVideoFile(filename) {
+  return /\.(mp4|mov|webm|avi|mkv|m4v)$/i.test(filename);
+}
+function mediaUrl(filename) {
+  return '/api/uploads/' + encodeURIComponent(filename);
+}
+
+function avatarStyle(color) {
+  if (!color) return '';
+  return 'background:' + color;
+}
+
+// XP / Tier helpers
+const TIER_THRESHOLDS = [
+  { min: 2000, tier: 'Mythic', icon: '🔱', cls: 'tier-mythic' },
+  { min: 1000, tier: 'Diamond', icon: '💎', cls: 'tier-diamond' },
+  { min: 600, tier: 'Titanium', icon: '⚡', cls: 'tier-titanium' },
+  { min: 300, tier: 'Steel', icon: '🔩', cls: 'tier-steel' },
+  { min: 100, tier: 'Iron', icon: '🪨', cls: 'tier-iron' },
+  { min: 0, tier: 'Recruit', icon: '🏷️', cls: 'tier-recruit' },
+];
+function computeXP(u) {
+  const totalLifts = u.total_lifts || 0;
+  const totalWeight = u.total_weight_lifted || 0;
+  const achievements = u.achievement_count || 0;
+  return (totalLifts * 10) + Math.floor(totalWeight / 100) + (achievements * 50);
+}
+function getTier(xp) {
+  for (const t of TIER_THRESHOLDS) {
+    if (xp >= t.min) return t;
+  }
+  return TIER_THRESHOLDS[TIER_THRESHOLDS.length - 1];
+}
+function xpToNextTier(xp) {
+  for (let i = TIER_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (xp < TIER_THRESHOLDS[i].min) {
+      const prev = i < TIER_THRESHOLDS.length - 1 ? TIER_THRESHOLDS[i + 1].min : 0;
+      return { next: TIER_THRESHOLDS[i].min, prev, pct: Math.min(100, Math.round(((xp - prev) / (TIER_THRESHOLDS[i].min - prev)) * 100)) };
+    }
+  }
+  return { next: null, prev: 2000, pct: 100 };
+}
+
+// Weekly challenges
+const WEEKLY_CHALLENGES = [
+  { desc: 'Log 3 squat sessions this week', check: (s) => ({ current: Math.min(3, s.weekSquats || 0), target: 3 }) },
+  { desc: 'Log 5 lifts this week', check: (s) => ({ current: Math.min(5, s.weekLifts || 0), target: 5 }) },
+  { desc: 'Hit a new personal record', check: (s) => ({ current: s.weekPRs ? 1 : 0, target: 1 }) },
+  { desc: 'Log 3 bench sessions this week', check: (s) => ({ current: Math.min(3, s.weekBench || 0), target: 3 }) },
+  { desc: 'Log at least 1 lift every day (3 days)', check: (s) => ({ current: Math.min(3, s.weekDays || 0), target: 3 }) },
+  { desc: 'Log 3 deadlift sessions this week', check: (s) => ({ current: Math.min(3, s.weekDeadlifts || 0), target: 3 }) },
+  { desc: 'Log 4 lifts this week', check: (s) => ({ current: Math.min(4, s.weekLifts || 0), target: 4 }) },
+];
+function getWeeklyChallenge() {
+  const weekNum = Math.floor((Date.now() / 1000 / 60 / 60 / 24 + 3) / 7);
+  return WEEKLY_CHALLENGES[weekNum % WEEKLY_CHALLENGES.length];
+}
+function avatarUrl(filename) {
+  return '/api/uploads/' + encodeURIComponent(filename);
+}
+
+function showLightbox(src, isVideo) {
+  const overlay = document.createElement('div');
+  overlay.className = 'media-lightbox';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  if (isVideo) {
+    overlay.innerHTML = '<button class="media-lightbox-close" onclick="this.parentElement.remove()">✕</button><video src="' + src + '" controls autoplay style="max-width:90vw;max-height:90vh;border-radius:var(--radius)"></video>';
+  } else {
+    overlay.innerHTML = '<button class="media-lightbox-close" onclick="this.parentElement.remove()">✕</button><img src="' + src + '" alt="Lift media">';
+  }
+  document.body.appendChild(overlay);
+  const handler = (e) => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', handler); } };
+  document.addEventListener('keydown', handler);
+}
+
+function confetti() {
+  const colors = ['#c8a44e', '#4e8cff', '#3ec97a', '#e54545', '#e8d5a0', '#f0eff4'];
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.top = '-10px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    piece.style.animationDuration = (1 + Math.random() * 1.5) + 's';
+    piece.style.animationDelay = Math.random() * 0.5 + 's';
+    piece.style.width = (6 + Math.random() * 6) + 'px';
+    piece.style.height = (6 + Math.random() * 6) + 'px';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 3000);
+  }
+  // Gold sparkles
+  for (let i = 0; i < 20; i++) {
+    const spark = document.createElement('div');
+    spark.className = 'confetti-sparkle';
+    spark.style.left = (20 + Math.random() * 60) + 'vw';
+    spark.style.top = (10 + Math.random() * 40) + 'vh';
+    spark.style.animationDelay = Math.random() * 0.6 + 's';
+    document.body.appendChild(spark);
+    setTimeout(() => spark.remove(), 1500);
+  }
+}
+
+// ── Vue App ──
+const app = createApp({
+  setup() {
+    const currentUser = ref(null);
+    const initError = ref(false);
+    const route = ref('dashboard');
+    const routeParam = ref(null);
+    const mobileNavOpen = ref(false);
+    const chatOpen = ref(false);
+    const toasts = ref([]);
+    const unreadCount = ref(0);
+    const showInstallPrompt = ref(false);
+    let deferredPrompt = null;
+    let toastId = 0;
+    let ws = null;
+    let wsRetryDelay = 1000;
+
+    // Event bus for WS events
+    const wsHandlers = new Set();
+    function onWS(handler) { wsHandlers.add(handler); }
+    function offWS(handler) { wsHandlers.delete(handler); }
+
+    function addToast(icon, text, sub, cls) {
+      const id = ++toastId;
+      toasts.value.push({ id, icon, text, sub, cls });
+      setTimeout(() => {
+        toasts.value = toasts.value.filter(t => t.id !== id);
+      }, 4000);
+    }
+
+    function parseRoute() {
+      const hash = location.hash.slice(1) || 'dashboard';
+      const [r, ...params] = hash.split('/');
+      route.value = r;
+      routeParam.value = params[0] ? parseInt(params[0]) : null;
+      mobileNavOpen.value = false;
+    }
+
+    function connectWS() {
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${proto}//${location.host}/ws`);
+      ws.onopen = () => { wsRetryDelay = 1000; };
+      ws.onmessage = (e) => {
+        try {
+          const { event, data } = JSON.parse(e.data);
+          handleWSEvent(event, data);
+        } catch {}
+      };
+      ws.onclose = () => {
+        setTimeout(() => { wsRetryDelay = Math.min(wsRetryDelay * 2, 30000); connectWS(); }, wsRetryDelay);
+      };
+    }
+
+    function handleWSEvent(event, data) {
+      if (event === 'new_lift' && currentUser.value && data.user_id !== currentUser.value.id) {
+        const prText = data.is_pr ? ' (NEW PR!)' : '';
+        addToast('🔔', `${data.display_name} logged ${data.lift_type}`, `${data.weight} lbs${prText}`);
+      }
+      if (event === 'achievement' && currentUser.value && data.user_id !== currentUser.value.id) {
+        data.achievements.forEach(a => {
+          addToast(a.icon, `${data.display_name} unlocked`, `${a.label}: ${a.desc}`, 'achievement');
+        });
+      }
+      if (event === 'mention' && currentUser.value && data.mentioned_user_ids.includes(currentUser.value.id)) {
+        addToast('💬', `${data.from_display_name} mentioned you`, data.message.length > 60 ? data.message.slice(0, 60) + '...' : data.message, 'mention');
+      }
+      // Notify all registered component handlers
+      for (const handler of wsHandlers) {
+        handler(event, data);
+      }
+    }
+
+    async function handleVote(liftId, voteType) {
+      try {
+        return await api.post(`/lifts/${liftId}/vote`, { vote_type: voteType });
+      } catch (err) {
+        addToast('❌', 'Error', err.message);
+        return null;
+      }
+    }
+
+    async function onLiftLogged() {
+      currentUser.value = await api.get('/me');
+    }
+
+    function onUserUpdated(user) {
+      currentUser.value = user;
+    }
+
+    async function fetchUnreadCount() {
+      try {
+        const data = await api.get('/notifications/unread');
+        unreadCount.value = data.count;
+      } catch(e) {}
+    }
+
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => { showInstallPrompt.value = false; deferredPrompt = null; });
+      }
+    }
+
+    onMounted(async () => {
+      try {
+        currentUser.value = await api.get('/me');
+        connectWS();
+        fetchUnreadCount();
+        // Poll unread every 60s
+        setInterval(fetchUnreadCount, 60000);
+      } catch (e) {
+        initError.value = true;
+      }
+      parseRoute();
+      window.addEventListener('hashchange', parseRoute);
+
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
+
+      // PWA install prompt
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallPrompt.value = true;
+      });
+    });
+
+    return {
+      currentUser, initError, route, routeParam, mobileNavOpen, chatOpen, toasts,
+      unreadCount, showInstallPrompt,
+      addToast, handleVote, onLiftLogged, onUserUpdated, fetchUnreadCount, installPWA, api,
+      onWS, offWS,
+      initials: getInitials, avatarStyle, avatarUrl,
+    };
+  },
+});
+
+
+// ── Circle Progress Component ──
+app.component('circle-progress', {
+  props: ['pct', 'total', 'goal'],
+  template: `
+    <div class="circle-progress" :style="pct >= 85 ? 'filter: drop-shadow(0 0 8px rgba(62,201,122,0.2))' : ''">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%">
+            <stop offset="0%" stop-color="var(--blue)"/>
+            <stop offset="50%" stop-color="var(--gold)"/>
+            <stop offset="100%" stop-color="var(--red)"/>
+          </linearGradient>
+          <linearGradient id="grad-complete" x1="0%" y1="0%" x2="100%">
+            <stop offset="0%" stop-color="var(--green)"/>
+            <stop offset="100%" stop-color="#5edb90"/>
+          </linearGradient>
+        </defs>
+        <circle class="track" cx="80" cy="80" r="68"/>
+        <circle class="fill-ring" cx="80" cy="80" r="68" :stroke="pct >= 100 ? 'url(#grad-complete)' : 'url(#grad)'" :stroke-dasharray="circumference" :stroke-dashoffset="animatedOffset"/>
+      </svg>
+      <div class="center-text">
+        <div class="stat-big">{{ total }}</div>
+        <div class="stat-label">/ {{ goal }} LBS</div>
+      </div>
+    </div>
+  `,
+  data() {
+    return { animatedOffset: 2 * Math.PI * 68 };
+  },
+  computed: {
+    circumference() { return 2 * Math.PI * 68; },
+    targetOffset() { return this.circumference - (Math.min(this.pct, 100) / 100) * this.circumference; },
+  },
+  mounted() {
+    requestAnimationFrame(() => { this.animatedOffset = this.targetOffset; });
+  },
+  watch: {
+    pct() {
+      requestAnimationFrame(() => { this.animatedOffset = this.targetOffset; });
+    },
+  },
+});
+
+
+// ── React Buttons Component ──
+app.component('react-buttons', {
+  props: ['lift', 'currentUser'],
+  emits: ['vote'],
+  template: `
+    <span class="react-btns" v-if="isOwn ? (hype > 0 || down > 0) : true">
+      <template v-if="isOwn">
+        <span v-if="hype > 0" class="react-btn up" style="cursor:default;pointer-events:none">💪 <span class="react-count">{{ hype }}</span></span>
+        <span v-if="down > 0" class="react-btn down" style="cursor:default;pointer-events:none">👎 <span class="react-count">{{ down }}</span></span>
+      </template>
+      <template v-else>
+        <button class="react-btn up" :class="{ active: lift.user_vote === 1 }" @click.stop="$emit('vote', lift.id, 1)" title="Hype this lift">💪 <span class="react-count">{{ hype > 0 ? hype : '' }}</span></button>
+        <button class="react-btn down" :class="{ active: lift.user_vote === -1 }" @click.stop="$emit('vote', lift.id, -1)" title="Call BS on this lift">👎 <span class="react-count">{{ down > 0 ? down : '' }}</span></button>
+      </template>
+    </span>
+  `,
+  computed: {
+    isOwn() { return this.lift.user_id === this.currentUser.id; },
+    hype() { return this.lift.hype_count || 0; },
+    down() { return this.lift.vote_count || 0; },
+  },
+});
+
+
+// ── Media Thumb Component ──
+app.component('media-thumb', {
+  props: ['filename', 'small', 'canRemove', 'liftId'],
+  emits: ['remove'],
+  template: `
+    <div v-if="filename" :class="['media-thumb', small ? 'media-thumb-sm' : '']" @click="openLightbox">
+      <video v-if="isVideo" :src="url" preload="metadata" muted></video>
+      <img v-else :src="url" alt="Lift media" loading="lazy">
+      <div v-if="isVideo" class="video-play-overlay">▶</div>
+      <button v-if="canRemove" class="remove-media-btn" @click.stop="$emit('remove', liftId)" title="Remove media">✕</button>
+    </div>
+  `,
+  computed: {
+    isVideo() { return isVideoFile(this.filename); },
+    url() { return mediaUrl(this.filename); },
+  },
+  methods: {
+    openLightbox() { showLightbox(this.url, this.isVideo); },
+  },
+});
+
+
+// ── Emoji Reactions Component ──
+app.component('emoji-reactions', {
+  props: ['lift', 'currentUser', 'api'],
+  template: `
+    <div class="reaction-bar">
+      <button v-for="(count, emoji) in lift.reactions" :key="emoji" class="reaction-btn" :class="{ active: (lift.user_reactions || []).includes(emoji) }" @click.stop="react(emoji)">
+        {{ emoji }} <span class="reaction-count">{{ count }}</span>
+      </button>
+      <div class="reaction-add" @click.stop="pickerOpen = !pickerOpen" v-if="lift.user_id !== currentUser.id">
+        +
+        <div v-if="pickerOpen" class="reaction-picker" @click.stop>
+          <button v-for="e in emojis" :key="e" @click.stop="react(e); pickerOpen = false">{{ e }}</button>
+        </div>
+      </div>
+    </div>
+  `,
+  data() {
+    return { pickerOpen: false, emojis: ['💪', '🔥', '🫡', '😤', '🧢'] };
+  },
+  methods: {
+    async react(emoji) {
+      try {
+        const result = await this.api.post('/lifts/' + this.lift.id + '/react', { emoji });
+        this.lift.reactions = result.reactions;
+        this.lift.user_reactions = result.user_reactions;
+      } catch (e) {}
+      this.pickerOpen = false;
+    },
+  },
+});
+
+// ── Sparkline Component ──
+app.component('spark-line', {
+  props: ['data', 'color'],
+  template: '<canvas ref="cvs" class="sparkline-wrap" width="60" height="24"></canvas>',
+  setup(props) {
+    const cvs = ref(null);
+    function draw() {
+      const c = cvs.value;
+      if (!c || !props.data || props.data.length < 2) return;
+      const ctx = c.getContext('2d');
+      const w = c.width, h = c.height;
+      ctx.clearRect(0, 0, w, h);
+      const vals = props.data;
+      const min = Math.min(...vals), max = Math.max(...vals);
+      const range = max - min || 1;
+      const step = w / (vals.length - 1);
+      ctx.beginPath();
+      ctx.strokeStyle = props.color || '#c8a44e';
+      ctx.lineWidth = 1.5;
+      ctx.lineJoin = 'round';
+      vals.forEach((v, i) => {
+        const x = i * step;
+        const y = h - ((v - min) / range) * (h - 4) - 2;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      // Fill under
+      ctx.lineTo((vals.length - 1) * step, h);
+      ctx.lineTo(0, h);
+      ctx.closePath();
+      ctx.fillStyle = (props.color || '#c8a44e') + '15';
+      ctx.fill();
+    }
+    onMounted(() => nextTick(draw));
+    watch(() => props.data, () => nextTick(draw));
+    return { cvs };
+  },
+});
+
+// ── Heatmap Component ──
+app.component('lift-heatmap', {
+  props: ['userId', 'api'],
+  template: `
+    <div v-if="cells.length">
+      <div class="heatmap-months">
+        <div v-for="m in months" :key="m" class="heatmap-month">{{ m }}</div>
+      </div>
+      <div class="heatmap-grid" :style="{ gridTemplateColumns: 'repeat(' + cols + ', 1fr)' }">
+        <div v-for="(c, i) in cells" :key="i" class="heatmap-cell" :class="c.cls" :title="c.date + ': ' + c.count + ' lifts'"></div>
+      </div>
+    </div>
+    <div v-else class="text-center text-dim" style="padding:1rem">No data for heatmap yet</div>
+  `,
+  setup(props) {
+    const cells = ref([]);
+    const months = ref([]);
+    const cols = ref(12);
+
+    async function load() {
+      const data = await props.api.get('/lifts/heatmap/' + props.userId);
+      const map = {};
+      data.forEach(d => { map[d.date] = d.count; });
+
+      const today = new Date();
+      const grid = [];
+      const totalDays = 84; // 12 weeks
+      const seenMonths = [];
+
+      for (let i = totalDays - 1; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const count = map[dateStr] || 0;
+        let cls = '';
+        if (count >= 4) cls = 'lvl-4';
+        else if (count >= 3) cls = 'lvl-3';
+        else if (count >= 2) cls = 'lvl-2';
+        else if (count >= 1) cls = 'lvl-1';
+        grid.push({ date: dateStr, count, cls });
+
+        const monthLabel = d.toLocaleDateString('en-US', { month: 'short' });
+        if (d.getDate() <= 7 && !seenMonths.includes(monthLabel)) {
+          seenMonths.push(monthLabel);
+        }
+      }
+      cells.value = grid;
+      cols.value = Math.ceil(totalDays / 7);
+      months.value = seenMonths.slice(0, cols.value);
+    }
+
+    onMounted(load);
+    watch(() => props.userId, load);
+    return { cells, months, cols };
+  },
+});
+
+// ── Dashboard Page ──
+app.component('dashboard-page', {
+  props: ['currentUser', 'showToast', 'api'],
+  emits: ['vote'],
+  template: `
+    <div v-if="loading" style="padding:1.5rem">
+      <div class="grid-2 mb-1"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div>
+      <div class="skeleton skeleton-card" style="height:200px;margin-bottom:1rem"></div>
+      <div class="skeleton skeleton-card" style="height:160px"></div>
+    </div>
+    <div v-else>
+      <div class="grid-2 mb-1" style="align-items:start">
+        <div class="card text-center">
+          <div class="card-header">Your Total</div>
+          <circle-progress :pct="myPct" :total="myTotal" :goal="myGoal"></circle-progress>
+          <div style="margin-top:0.75rem">
+            <span v-if="myPct >= 100" class="club-badge">&#9733; 1000LB CLUB MEMBER</span>
+            <span v-else class="text-sm text-secondary">{{ myGoal - myTotal }} lbs to go</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Your PRs</div>
+          <div class="grid-3" style="text-align:center">
+            <div>
+              <div class="stat-big" style="color:var(--blue)">{{ me ? me.squat : 0 }}</div>
+              <div class="stat-label">Squat</div>
+            </div>
+            <div>
+              <div class="stat-big" style="color:var(--red)">{{ me ? me.bench : 0 }}</div>
+              <div class="stat-label">Bench</div>
+            </div>
+            <div>
+              <div class="stat-big" style="color:var(--gold)">{{ me ? me.deadlift : 0 }}</div>
+              <div class="stat-label">Deadlift</div>
+            </div>
+          </div>
+          <div style="margin-top:1.25rem">
+            <a href="#log" class="btn btn-primary btn-block btn-lg">Log a Lift</a>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="stats" class="stats-grid mb-1">
+        <div class="stat-card">
+          <div class="stat-card-icon">🏋️</div>
+          <div class="stat-card-value">{{ stats.totalLifts }}</div>
+          <div class="stat-card-label">Total Lifts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🔥</div>
+          <div class="stat-card-value">{{ stats.streak }}</div>
+          <div class="stat-card-label">Day Streak</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">📅</div>
+          <div class="stat-card-value">{{ stats.weekLifts }}</div>
+          <div class="stat-card-label">This Week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">{{ myTier.icon }}</div>
+          <div class="stat-card-value" style="font-size:1.1rem">{{ myTier.tier }}</div>
+          <div class="stat-card-label">{{ stats.xp }} XP</div>
+          <div class="xp-bar"><div class="xp-fill" :style="{ width: myXpProgress.pct + '%' }"></div></div>
+        </div>
+      </div>
+
+      <div v-if="weeklyChallenge" class="challenge-card mb-1">
+        <div class="challenge-title">Weekly Challenge</div>
+        <div class="challenge-desc">{{ weeklyChallenge.desc }}</div>
+        <div class="challenge-progress">
+          <div class="challenge-progress-bar"><div class="challenge-progress-fill" :style="{ width: challengeProgress.pct + '%' }"></div></div>
+          <div class="challenge-progress-text">{{ challengeProgress.current }} / {{ challengeProgress.target }}</div>
+        </div>
+      </div>
+
+      <div class="card mb-1">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Leaderboard</span>
+          <label class="dots-toggle" v-if="leaderboard.some(u => u.dots > 0)">
+            <input type="checkbox" v-model="showDOTS">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            DOTS
+            <span class="dots-info-btn" @click.prevent.stop="showDotsInfo = true" title="What is DOTS?">?</span>
+          </label>
+
+          <!-- DOTS info modal -->
+          <teleport to="body">
+            <div v-if="showDotsInfo" class="dots-modal-overlay" @click.self="showDotsInfo = false">
+              <div class="dots-modal">
+                <button class="dots-modal-close" @click="showDotsInfo = false">&times;</button>
+                <h3>&#x2696;&#xFE0F; DOTS Score</h3>
+                <p>DOTS is a relative strength formula that levels the playing field across different bodyweights. A heavier lifter needs a bigger total to match a lighter lifter's score.</p>
+                <div class="dots-formula">DOTS = Total (kg) &times; 500 / coefficient(bodyweight)</div>
+                <p>The coefficient is a 4th-degree polynomial fitted to competitive powerlifting data. This means a 150 lb lifter totaling 1000 lbs and a 220 lb lifter totaling 1300 lbs can be compared fairly.</p>
+                <p style="margin-bottom:0.4rem;color:var(--text);font-weight:600;font-size:0.75rem;">Rough benchmarks (male):</p>
+                <div class="dots-tiers">
+                  <span class="tier-score">300+</span><span class="tier-label">Beginner</span>
+                  <span class="tier-score">350+</span><span class="tier-label">Intermediate</span>
+                  <span class="tier-score">400+</span><span class="tier-label">Advanced</span>
+                  <span class="tier-score">450+</span><span class="tier-label">Elite</span>
+                  <span class="tier-score">500+</span><span class="tier-label">World Class</span>
+                </div>
+                <p style="font-size:0.7rem;margin-top:0.5rem;">Log your bodyweight in the Profile tab to enable DOTS calculation.</p>
+              </div>
+            </div>
+          </teleport>
+        </div>
+        <div class="lb-header">
+          <span>#</span><span>Lifter</span><span>Squat</span><span>Bench</span><span>Dead</span><span class="desktop-only">Progress</span><span>{{ showDOTS ? 'DOTS' : 'Total' }}</span>
+        </div>
+        <div v-for="(u, i) in leaderboard" :key="u.id" class="lb-row" @click="goToUser(u)">
+          <div class="rank" :class="i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''">{{ i + 1 }}</div>
+          <div class="user-info">
+            <div class="avatar" :style="avatarStyle(u.avatar_color)"><img v-if="u.avatar_url" :src="avatarUrl(u.avatar_url)"><template v-else>{{ initials(u.display_name) }}</template></div>
+            <div>
+              <div style="font-weight:600;font-size:0.9rem">{{ u.display_name }}{{ i === 0 ? ' 👑' : '' }}</div>
+              <span :class="['tier-badge', userTier(u).cls]">{{ userTier(u).icon }} {{ userTier(u).tier }}</span>
+              <span v-if="u.total >= u.total_goal" class="club-badge" style="margin-left:0.25rem">&#9733; MEMBER</span>
+            </div>
+          </div>
+          <div class="lift-val" style="color:var(--blue)">{{ u.squat }}<br v-if="sparklines[u.id]"><spark-line v-if="sparklines[u.id] && sparklines[u.id].squat.length > 1" :data="sparklines[u.id].squat" color="#4e8cff"></spark-line></div>
+          <div class="lift-val" style="color:var(--red)">{{ u.bench }}<br v-if="sparklines[u.id]"><spark-line v-if="sparklines[u.id] && sparklines[u.id].bench.length > 1" :data="sparklines[u.id].bench" color="#e54545"></spark-line></div>
+          <div class="lift-val" style="color:var(--gold)">{{ u.deadlift }}<br v-if="sparklines[u.id]"><spark-line v-if="sparklines[u.id] && sparklines[u.id].deadlift.length > 1" :data="sparklines[u.id].deadlift" color="#c8a44e"></spark-line></div>
+          <div class="desktop-only">
+            <div class="progress-bar"><div class="progress-fill" :class="{ complete: u.total >= u.total_goal }" :style="{ width: u.progress + '%' }"></div></div>
+            <div style="font-size:0.65rem;color:var(--text-dim);margin-top:0.2rem">{{ u.progress }}%</div>
+          </div>
+          <div class="total-col">
+            <div class="total-num">{{ showDOTS ? (u.dots || '—') : u.total }}</div>
+            <div class="stat-label">{{ showDOTS ? 'DOTS' : 'LBS' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Recent Activity</div>
+        <div v-if="activity.length === 0" class="text-center text-dim" style="padding:2rem">No lifts logged yet. Be the first!</div>
+        <div v-for="a in activity" :key="a.id" class="activity-item" style="flex-wrap:wrap">
+          <div class="avatar" style="width:28px;height:28px;font-size:0.6rem" :style="avatarStyle(a.avatar_color)"><img v-if="a.avatar_url" :src="avatarUrl(a.avatar_url)"><template v-else>{{ initials(a.display_name) }}</template></div>
+          <div style="flex:1">
+            <span style="font-weight:600;font-size:0.85rem">{{ a.display_name }}</span>
+            <span class="lift-badge" :class="a.lift_type">{{ a.lift_type }}</span>
+            <span class="activity-weight">{{ a.weight }} lbs<template v-if="a.reps > 1"> x{{ a.reps }}</template></span>
+            <span v-if="a.reps > 1 && a.e1rm" style="font-size:0.7rem;color:var(--text-dim)">e1RM: {{ a.e1rm }}</span>
+            <span v-if="a.is_pr" class="pr-badge">PR</span>
+            <span v-if="a.is_sus" class="sus-badge">SUS</span>
+            <span v-if="a.vote_count >= 3" class="fng-badge">FAKE AND GAY</span>
+            <div v-if="a.notes" class="text-sm text-dim" style="margin-top:0.15rem">{{ a.notes }}</div>
+            <div v-if="a.media_filename">
+              <media-thumb :filename="a.media_filename" :small="true"></media-thumb>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.25rem">
+            <div class="activity-meta">{{ timeAgo(a.created_at) }}</div>
+            <react-buttons :lift="a" :current-user="currentUser" @vote="onVote"></react-buttons>
+          </div>
+          <div v-if="a.reactions && Object.keys(a.reactions).length > 0 || a.user_id !== currentUser.id" style="width:100%;padding-left:2.75rem">
+            <emoji-reactions :lift="a" :current-user="currentUser" :api="api"></emoji-reactions>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  setup(props, { emit }) {
+    const loading = ref(true);
+    const leaderboard = ref([]);
+    const activity = ref([]);
+    const stats = ref(null);
+    const sparklines = reactive({});
+    const showDOTS = ref(false);
+    const showDotsInfo = ref(false);
+
+    const me = computed(() => leaderboard.value.find(u => u.id === props.currentUser.id));
+    const myTotal = computed(() => me.value ? me.value.total : 0);
+    const myGoal = computed(() => me.value ? me.value.total_goal : 1000);
+    const myPct = computed(() => Math.min(100, Math.round((myTotal.value / myGoal.value) * 100)));
+
+    const myTier = computed(() => stats.value ? getTier(stats.value.xp) : getTier(0));
+    const myXpProgress = computed(() => stats.value ? xpToNextTier(stats.value.xp) : { pct: 0 });
+
+    const weeklyChallenge = computed(() => getWeeklyChallenge());
+    const challengeProgress = computed(() => {
+      if (!stats.value || !weeklyChallenge.value) return { current: 0, target: 1, pct: 0 };
+      const s = {
+        weekLifts: stats.value.weekLifts || 0,
+        weekSquats: stats.value.weekSquats || 0,
+        weekBench: stats.value.weekBench || 0,
+        weekDeadlifts: stats.value.weekDeadlifts || 0,
+        weekPRs: stats.value.weekPRs || 0,
+        weekDays: stats.value.weekDays || 0,
+      };
+      const result = weeklyChallenge.value.check(s);
+      return { ...result, pct: Math.min(100, Math.round((result.current / result.target) * 100)) };
+    });
+
+    function userTier(u) {
+      return getTier(computeXP(u));
+    }
+
+    async function loadData() {
+      const [lb, act, st] = await Promise.all([props.api.get('/leaderboard'), props.api.get('/activity?limit=15'), props.api.get('/stats')]);
+      leaderboard.value = lb;
+      activity.value = act;
+      stats.value = st;
+      loading.value = false;
+      // Load sparklines for each user in background
+      lb.forEach(u => {
+        props.api.get('/lifts/sparkline/' + u.id).then(data => {
+          sparklines[u.id] = data;
+        }).catch(() => {});
+      });
+    }
+
+    async function onVote(liftId, voteType) {
+      const result = await emit('vote', liftId, voteType);
+    }
+
+    // Direct vote handling with optimistic update
+    async function handleVoteClick(liftId, voteType) {
+      try {
+        const result = await props.api.post(`/lifts/${liftId}/vote`, { vote_type: voteType });
+        // Update the lift in activity reactively
+        const lift = activity.value.find(a => a.id === liftId);
+        if (lift && result) {
+          lift.vote_count = result.vote_count;
+          lift.hype_count = result.hype_count;
+          lift.user_vote = result.user_vote;
+        }
+      } catch (err) {
+        props.showToast('❌', 'Error', err.message);
+      }
+    }
+
+    function handleWS(event, data) {
+      if (event === 'new_lift' || event === 'delete_lift') {
+        loadData();
+      }
+      if (event === 'vote') {
+        const lift = activity.value.find(a => a.id === data.lift_id);
+        if (lift) {
+          lift.vote_count = data.vote_count;
+          lift.hype_count = data.hype_count;
+        }
+      }
+      if (event === 'reaction') {
+        const lift = activity.value.find(a => a.id === data.lift_id);
+        if (lift) {
+          lift.reactions = data.reactions;
+        }
+      }
+    }
+
+    onMounted(() => {
+      loadData();
+      // Get the parent app's WS registration
+      const appInstance = app._instance;
+    });
+
+    function goToUser(u) {
+      location.hash = u.id === props.currentUser.id ? 'history' : `user/${u.id}`;
+    }
+
+    // Expose WS handler for parent to call
+    const wsHandler = (event, data) => handleWS(event, data);
+
+    return {
+      loading, leaderboard, activity, me, myTotal, myGoal, myPct,
+      stats, myTier, myXpProgress, weeklyChallenge, challengeProgress,
+      sparklines, showDOTS, showDotsInfo, userTier, onVote: handleVoteClick, goToUser,
+      initials: getInitials, timeAgo, wsHandler, avatarStyle, avatarUrl,
+      loadData, handleWS,
+    };
+  },
+  mounted() {
+    // Register WS handler via parent provide
+    this._wsHandler = (event, data) => this.handleWS(event, data);
+    this.$root.onWS(this._wsHandler);
+  },
+  unmounted() {
+    if (this._wsHandler) this.$root.offWS(this._wsHandler);
+  },
+});
+
+
+// ── Log Lift Page ──
+app.component('log-page', {
+  props: ['currentUser', 'showToast', 'api'],
+  emits: ['lift-logged'],
+  template: `
+    <div class="card" style="max-width:500px;margin:0 auto">
+      <div class="card-header text-center">Log a Max</div>
+      <div class="lift-selector">
+        <div v-for="t in liftTypes" :key="t.type" class="lift-option" :class="[t.type, { selected: selectedType === t.type }]" @click="selectedType = t.type">
+          <div class="lift-option-icon">{{ t.icon }}</div>
+          <div class="lift-option-label">{{ t.type }}</div>
+        </div>
+      </div>
+
+      <div v-if="selectedType && currentPR" class="pr-hint">
+        Current {{ selectedType }} PR: <strong>{{ currentPR }} lbs</strong>
+      </div>
+
+      <div class="weight-input-wrap">
+        <button @click="weight = Math.max(1, weight - 5)" title="-5 lbs">−</button>
+        <input type="number" v-model.number="weight" min="1" max="2000" step="5">
+        <span class="weight-unit">LBS</span>
+        <button @click="weight += 5" title="+5 lbs">+</button>
+      </div>
+
+      <div class="reps-wrap">
+        <button @click="reps = Math.max(1, reps - 1)">−</button>
+        <div style="text-align:center">
+          <div class="reps-value">{{ reps }}</div>
+          <div class="reps-label">Reps</div>
+        </div>
+        <button @click="reps = Math.min(20, reps + 1)">+</button>
+      </div>
+
+      <div v-if="reps > 1" class="e1rm-display">
+        <div class="e1rm-value">Est. 1RM: {{ estimatedMax }} lbs</div>
+        <div class="e1rm-label">Epley Formula</div>
+      </div>
+
+      <div class="grid-2 mb-1">
+        <div>
+          <label>Date</label>
+          <input type="date" v-model="date">
+        </div>
+        <div>
+          <label>Notes (optional)</label>
+          <input type="text" v-model="notes" placeholder="e.g. felt easy">
+        </div>
+      </div>
+
+      <div v-if="!previewUrl" class="media-upload" @dragover.prevent="dragOver = true" @dragleave="dragOver = false" @drop.prevent="onDrop" :class="{ 'drag-over': dragOver }">
+        <div class="media-upload-icon">📎</div>
+        <div class="media-upload-text">Add photo or video (optional)</div>
+        <input type="file" accept="image/*,video/*" @change="onFileSelect" ref="fileInput">
+      </div>
+      <div v-else class="media-preview">
+        <button class="media-preview-remove" type="button" @click="clearMedia">✕</button>
+        <video v-if="previewIsVideo" :src="previewUrl" controls muted></video>
+        <img v-else :src="previewUrl" alt="Preview">
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg mt-1" :disabled="!selectedType || submitting" @click="submitLift">
+        {{ submitting ? 'LOGGING...' : (selectedType ? 'LOG IT' : 'Select a lift type') }}
+      </button>
+    </div>
+  `,
+  setup(props, { emit }) {
+    const selectedType = ref(localStorage.getItem('lastLiftType') || null);
+    const weight = ref(135);
+    const reps = ref(1);
+    const date = ref(today());
+    const notes = ref('');
+    const selectedFile = ref(null);
+    const previewUrl = ref(null);
+    const previewIsVideo = ref(false);
+    const submitting = ref(false);
+    const dragOver = ref(false);
+    const fileInput = ref(null);
+    const currentPR = ref(0);
+
+    const liftTypes = [
+      { type: 'squat', icon: '🦵' },
+      { type: 'bench', icon: '🏋️' },
+      { type: 'deadlift', icon: '💀' },
+    ];
+
+    const estimatedMax = computed(() => {
+      if (reps.value <= 1) return weight.value;
+      return Math.round(weight.value * (1 + reps.value / 30));
+    });
+
+    // Auto-suggest weight when type changes
+    watch(() => selectedType.value, async (type) => {
+      if (!type) return;
+      localStorage.setItem('lastLiftType', type);
+      try {
+        const data = await props.api.get('/lifts/last/' + type);
+        currentPR.value = data.pr || 0;
+        if (data.last) {
+          weight.value = data.last.weight + 5; // suggest +5 lbs
+        }
+      } catch(e) {}
+    });
+
+    // Load initial suggestion if we have a saved type
+    onMounted(async () => {
+      if (selectedType.value) {
+        try {
+          const data = await props.api.get('/lifts/last/' + selectedType.value);
+          currentPR.value = data.pr || 0;
+          if (data.last) weight.value = data.last.weight + 5;
+        } catch(e) {}
+      }
+    });
+
+    function onFileSelect(e) {
+      if (e.target.files.length > 0) showPreview(e.target.files[0]);
+    }
+    function onDrop(e) {
+      dragOver.value = false;
+      if (e.dataTransfer.files.length > 0) showPreview(e.dataTransfer.files[0]);
+    }
+    function showPreview(file) {
+      selectedFile.value = file;
+      previewIsVideo.value = file.type.startsWith('video/');
+      previewUrl.value = URL.createObjectURL(file);
+    }
+    function clearMedia() {
+      if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
+      selectedFile.value = null;
+      previewUrl.value = null;
+      previewIsVideo.value = false;
+      if (fileInput.value) fileInput.value.value = '';
+    }
+
+    async function submitLift() {
+      if (!selectedType.value) return;
+      submitting.value = true;
+      try {
+        const formData = new FormData();
+        formData.append('lift_type', selectedType.value);
+        formData.append('weight', weight.value);
+        formData.append('reps', reps.value);
+        formData.append('date', date.value);
+        formData.append('notes', notes.value || '');
+        if (selectedFile.value) formData.append('media', selectedFile.value);
+
+        const result = await props.api.upload('/lifts', formData);
+
+        const repText = reps.value > 1 ? ` x${reps.value} (e1RM: ${estimatedMax.value})` : '';
+        if (result.isPR) {
+          confetti();
+          props.showToast('🏆', 'NEW PR!', `${selectedType.value.toUpperCase()} — ${weight.value} lbs${repText}`, 'pr');
+        } else {
+          props.showToast('✅', 'Lift logged!', `${selectedType.value.toUpperCase()} — ${weight.value} lbs${repText}`);
+        }
+
+        if (result.isSus) {
+          setTimeout(() => props.showToast('🤨', 'SUS', "That's a big jump... flagged as suspicious"), 800);
+        }
+
+        if (result.newAchievements && result.newAchievements.length > 0) {
+          setTimeout(() => {
+            result.newAchievements.forEach(a => {
+              props.showToast(a.icon, 'Achievement Unlocked!', `${a.label}: ${a.desc}`, 'achievement');
+            });
+            if (!result.isPR) confetti();
+          }, result.isPR ? 1500 : 0);
+        }
+
+        emit('lift-logged');
+
+        // Reset form — keep selectedType for quick re-entry
+        reps.value = 1;
+        clearMedia();
+      } catch (e) {
+        props.showToast('❌', 'Error', e.message);
+      }
+      submitting.value = false;
+    }
+
+    return {
+      selectedType, weight, reps, date, notes, selectedFile, previewUrl, previewIsVideo,
+      submitting, dragOver, fileInput, liftTypes, estimatedMax, currentPR,
+      onFileSelect, onDrop, clearMedia, submitLift,
+    };
+  },
+});
+
+
+// ── History Page ──
+app.component('history-page', {
+  props: ['userId', 'currentUser', 'isOwn', 'showToast', 'api'],
+  emits: ['vote'],
+  template: `
+    <div v-if="loading" class="text-center text-secondary" style="padding:3rem">Loading...</div>
+    <div v-else>
+      <div v-if="!isOwn" class="flex-between mb-1">
+        <div>
+          <h2 style="font-family:'Space Grotesk';font-size:1.5rem">{{ userName }}</h2>
+          <div v-if="userBio" class="bio-field" style="margin-top:0.25rem">{{ userBio }}</div>
+        </div>
+        <a href="#dashboard" class="btn btn-secondary btn-sm">&larr; Back</a>
+      </div>
+
+      <div class="grid-3 mb-1">
+        <div class="card text-center">
+          <div class="stat-big" style="color:var(--blue)">{{ prs.squat || 0 }}</div>
+          <div class="stat-label">Squat PR</div>
+        </div>
+        <div class="card text-center">
+          <div class="stat-big" style="color:var(--red)">{{ prs.bench || 0 }}</div>
+          <div class="stat-label">Bench PR</div>
+        </div>
+        <div class="card text-center">
+          <div class="stat-big" style="color:var(--gold)">{{ prs.deadlift || 0 }}</div>
+          <div class="stat-label">Deadlift PR</div>
+        </div>
+      </div>
+
+      <div class="card mb-1">
+        <div class="card-header">Training Frequency</div>
+        <lift-heatmap :user-id="userId" :api="api"></lift-heatmap>
+      </div>
+
+      <div class="card mb-1">
+        <div class="card-header">Progression</div>
+        <div class="chart-wrap"><canvas ref="chartCanvas"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="flex-between mb-05">
+          <div class="card-header" style="margin-bottom:0">Lift Log</div>
+          <div class="tabs">
+            <button v-for="t in tabs" :key="t.value" class="tab" :class="{ active: filterType === t.value }" @click="filterType = t.value">{{ t.label }}</button>
+          </div>
+        </div>
+        <div v-if="filteredLifts.length === 0" class="text-center text-dim" style="padding:2rem">No lifts logged yet</div>
+        <div v-for="l in filteredLifts" :key="l.id" class="lift-log-item">
+          <span class="text-secondary">{{ formatDate(l.date) }}</span>
+          <span class="lift-badge" :class="l.lift_type">{{ l.lift_type }}</span>
+          <span>
+            <span style="font-family:'Space Grotesk';font-size:1.1rem;font-weight:600">{{ l.weight }} lbs<template v-if="l.reps > 1"> x{{ l.reps }}</template></span>
+            <span v-if="l.reps > 1 && l.e1rm" style="font-size:0.7rem;color:var(--text-dim)">e1RM: {{ l.e1rm }}</span>
+            <span v-if="l.is_pr" class="pr-badge">PR</span>
+            <span v-if="l.is_sus" class="sus-badge">SUS</span>
+            <span v-if="l.vote_count >= 3" class="fng-badge">FAKE AND GAY</span>
+            <span v-if="l.notes" class="text-sm text-dim"> — {{ l.notes }}</span>
+            <div v-if="l.media_filename" style="position:relative;display:inline-block">
+              <media-thumb :filename="l.media_filename" :small="true" :can-remove="isOwn" :lift-id="l.id" @remove="removeMedia"></media-thumb>
+            </div>
+            <div v-else-if="isOwn" class="add-media-wrap">
+              <label class="add-media-btn">📎 Add<input type="file" accept="image/*,video/*" @change="addMedia($event, l.id)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%"></label>
+            </div>
+          </span>
+          <span style="display:flex;align-items:center;gap:0.25rem">
+            <react-buttons :lift="l" :current-user="currentUser" @vote="onVote"></react-buttons>
+            <button v-if="isOwn" class="btn btn-ghost btn-sm" @click="deleteLift(l.id)" title="Delete">✕</button>
+          </span>
+          <emoji-reactions v-if="l.reactions && Object.keys(l.reactions).length > 0 || !isOwn" :lift="l" :current-user="currentUser" :api="api" style="grid-column:1/-1"></emoji-reactions>
+        </div>
+      </div>
+    </div>
+  `,
+  setup(props, { emit }) {
+    const loading = ref(true);
+    const prs = ref({ squat: 0, bench: 0, deadlift: 0 });
+    const lifts = ref([]);
+    const userName = ref('');
+    const userBio = ref('');
+    const filterType = ref('');
+    const chartCanvas = ref(null);
+    let chartInstance = null;
+
+    const tabs = [
+      { label: 'All', value: '' },
+      { label: 'Squat', value: 'squat' },
+      { label: 'Bench', value: 'bench' },
+      { label: 'Deadlift', value: 'deadlift' },
+    ];
+
+    const filteredLifts = computed(() => {
+      if (!filterType.value) return lifts.value;
+      return lifts.value.filter(l => l.lift_type === filterType.value);
+    });
+
+    async function loadData() {
+      const [prData, liftData, userData] = await Promise.all([
+        props.api.get(`/lifts/prs/${props.userId}`),
+        props.api.get(`/lifts?user_id=${props.userId}&limit=200`),
+        props.isOwn ? Promise.resolve(props.currentUser) : props.api.get('/leaderboard').then(lb => lb.find(u => u.id === props.userId)),
+      ]);
+      prs.value = prData;
+      lifts.value = liftData;
+      userName.value = userData ? (userData.display_name || userData.email) : 'Unknown';
+      userBio.value = userData ? (userData.bio || '') : '';
+      loading.value = false;
+      await nextTick();
+      renderChart();
+    }
+
+    function renderChart() {
+      if (!chartCanvas.value || lifts.value.length === 0) return;
+      if (chartInstance) chartInstance.destroy();
+      const sorted = [...lifts.value].sort((a, b) => a.date.localeCompare(b.date));
+      const byType = { squat: [], bench: [], deadlift: [] };
+      sorted.forEach(l => { if (byType[l.lift_type]) byType[l.lift_type].push({ x: l.date, y: l.weight }); });
+
+      chartInstance = new Chart(chartCanvas.value, {
+        type: 'line',
+        data: {
+          datasets: [
+            { label: 'Squat', data: byType.squat, borderColor: '#4e8cff', backgroundColor: 'rgba(78,140,255,0.1)', tension: 0.3, pointRadius: 3, borderWidth: 2 },
+            { label: 'Bench', data: byType.bench, borderColor: '#e54545', backgroundColor: 'rgba(229,69,69,0.1)', tension: 0.3, pointRadius: 3, borderWidth: 2 },
+            { label: 'Deadlift', data: byType.deadlift, borderColor: '#c8a44e', backgroundColor: 'rgba(200,164,78,0.1)', tension: 0.3, pointRadius: 3, borderWidth: 2 },
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { intersect: false, mode: 'index' },
+          plugins: { legend: { labels: { color: '#8b8a95', font: { family: 'Inter', size: 12 } } } },
+          scales: {
+            x: { type: 'category', grid: { color: 'rgba(35,35,47,0.5)' }, ticks: { color: '#4a4955', font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
+            y: { grid: { color: 'rgba(35,35,47,0.5)' }, ticks: { color: '#4a4955', font: { size: 11 } }, beginAtZero: false }
+          }
+        }
+      });
+    }
+
+    async function onVote(liftId, voteType) {
+      try {
+        const result = await props.api.post(`/lifts/${liftId}/vote`, { vote_type: voteType });
+        const lift = lifts.value.find(l => l.id === liftId);
+        if (lift && result) {
+          lift.vote_count = result.vote_count;
+          lift.hype_count = result.hype_count;
+          lift.user_vote = result.user_vote;
+        }
+      } catch (err) {
+        props.showToast('❌', 'Error', err.message);
+      }
+    }
+
+    async function deleteLift(id) {
+      if (!confirm('Delete this lift?')) return;
+      await props.api.del(`/lifts/${id}`);
+      lifts.value = lifts.value.filter(l => l.id !== id);
+      // Reload PRs since they might change
+      prs.value = await props.api.get(`/lifts/prs/${props.userId}`);
+      await nextTick();
+      renderChart();
+    }
+
+    async function addMedia(e, liftId) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append('media', file);
+      try {
+        const result = await props.api.upload(`/lifts/${liftId}/media`, fd);
+        const lift = lifts.value.find(l => l.id === liftId);
+        if (lift) lift.media_filename = result.media_filename;
+        props.showToast('✅', 'Media added');
+      } catch (err) {
+        props.showToast('❌', 'Upload failed', err.message);
+      }
+    }
+
+    async function removeMedia(liftId) {
+      if (!confirm('Remove media?')) return;
+      try {
+        await props.api.del(`/lifts/${liftId}/media`);
+        const lift = lifts.value.find(l => l.id === liftId);
+        if (lift) lift.media_filename = null;
+        props.showToast('✅', 'Media removed');
+      } catch (err) {
+        props.showToast('❌', 'Error', err.message);
+      }
+    }
+
+    function handleWS(event, data) {
+      if (event === 'new_lift' && data.user_id === props.userId) {
+        loadData();
+      }
+      if (event === 'delete_lift') {
+        lifts.value = lifts.value.filter(l => l.id !== data.lift_id);
+      }
+      if (event === 'vote') {
+        const lift = lifts.value.find(l => l.id === data.lift_id);
+        if (lift) {
+          lift.vote_count = data.vote_count;
+          lift.hype_count = data.hype_count;
+        }
+      }
+      if (event === 'reaction') {
+        const lift = lifts.value.find(l => l.id === data.lift_id);
+        if (lift) {
+          lift.reactions = data.reactions;
+        }
+      }
+    }
+
+    onMounted(() => {
+      loadData();
+    });
+
+    onUnmounted(() => {
+      if (chartInstance) chartInstance.destroy();
+    });
+
+    return {
+      loading, prs, lifts, userName, userBio, filterType, chartCanvas, tabs, filteredLifts,
+      onVote, deleteLift, addMedia, removeMedia,
+      formatDate, handleWS, loadData,
+    };
+  },
+  mounted() {
+    this._wsHandler = (event, data) => this.handleWS(event, data);
+    this.$root.onWS(this._wsHandler);
+  },
+  unmounted() {
+    if (this._wsHandler) this.$root.offWS(this._wsHandler);
+  },
+  watch: {
+    userId() {
+      this.loading = true;
+      this.loadData();
+    },
+  },
+});
+
+
+// ── Profile Page ──
+app.component('profile-page', {
+  props: ['currentUser', 'showToast', 'api'],
+  emits: ['user-updated'],
+  template: `
+    <div v-if="loading" class="text-center text-secondary" style="padding:3rem">Loading...</div>
+    <div v-else>
+      <div class="grid-2 mb-1" style="align-items:start">
+        <div class="card profile-section">
+          <div class="card-header">Profile</div>
+          <div style="text-align:center;margin-bottom:1rem">
+            <div class="avatar-upload" :style="avatarStyle(me.avatar_color)">
+              <img v-if="me.avatar_url" :src="avatarUrl(me.avatar_url)">
+              <template v-else><div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:1.75rem;font-weight:700;color:#fff">{{ initials(me.display_name) }}</div></template>
+              <div class="avatar-overlay">Change</div>
+              <input type="file" accept="image/*" @change="uploadAvatar">
+            </div>
+            <button v-if="me.avatar_url" class="btn btn-ghost btn-sm" @click="removeAvatar" style="font-size:0.7rem">Remove photo</button>
+          </div>
+          <div class="mb-1">
+            <label>Display Name</label>
+            <div class="inline-edit">
+              <input v-model="displayName" style="flex:1">
+              <button class="btn btn-secondary btn-sm" @click="saveName">Save</button>
+            </div>
+          </div>
+          <div class="mb-1">
+            <label>Email</label>
+            <div class="text-secondary text-sm">{{ me.email }}</div>
+          </div>
+          <div class="mb-1">
+            <label>Bio</label>
+            <div class="bio-edit">
+              <textarea v-model="bio" maxlength="160" placeholder="Tell us about yourself..."></textarea>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.25rem">
+              <span class="text-dim text-sm">{{ (bio || '').length }}/160</span>
+              <button class="btn btn-secondary btn-sm" @click="saveBio">Save Bio</button>
+            </div>
+          </div>
+          <div class="mb-1">
+            <label>Member Since</label>
+            <div class="text-secondary text-sm">{{ formatDateFull(me.created_at.split('T')[0]) }}</div>
+          </div>
+        </div>
+
+        <div class="card profile-section">
+          <div class="card-header">Goals</div>
+          <div class="grid-2 mb-1">
+            <div>
+              <label>Total Goal (lbs)</label>
+              <input type="number" v-model.number="goalTotal" min="100" step="50">
+            </div>
+            <div>
+              <label>Squat Goal</label>
+              <input type="number" v-model.number="goalSquat" placeholder="Optional" min="0" step="5">
+            </div>
+            <div>
+              <label>Bench Goal</label>
+              <input type="number" v-model.number="goalBench" placeholder="Optional" min="0" step="5">
+            </div>
+            <div>
+              <label>Deadlift Goal</label>
+              <input type="number" v-model.number="goalDeadlift" placeholder="Optional" min="0" step="5">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" @click="saveGoals">Save Goals</button>
+        </div>
+      </div>
+
+      <div class="card mb-1 profile-section">
+        <div class="card-header">Body Weight</div>
+        <div class="grid-2 mb-1" style="max-width:400px">
+          <div>
+            <label>Weight (lbs)</label>
+            <input type="number" v-model.number="bwWeight" placeholder="185" min="1" step="0.5">
+          </div>
+          <div>
+            <label>Date</label>
+            <input type="date" v-model="bwDate">
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm mb-1" @click="logBodyweight">Log Weight</button>
+        <div v-if="bodyweight.length > 0" class="chart-wrap" style="height:200px"><canvas ref="bwChartCanvas"></canvas></div>
+        <div style="margin-top:0.75rem">
+          <div v-for="bw in bodyweight.slice(0, 10)" :key="bw.id" class="activity-item">
+            <span style="font-family:'Space Grotesk';font-weight:600">{{ bw.weight }} lbs</span>
+            <span class="text-secondary text-sm" style="flex:1">{{ formatDate(bw.date) }}</span>
+            <button class="btn btn-ghost btn-sm" @click="deleteBodyweight(bw.id)" title="Delete">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card profile-section">
+        <div class="card-header">Achievements ({{ achievements.length }}/{{ allDefs.length }})</div>
+        <div class="achievement-grid">
+          <div v-for="def in allDefs" :key="def.key" class="achievement-card" :class="unlockedKeys.has(def.key) ? 'unlocked' : 'locked'">
+            <div class="achievement-icon">{{ def.icon }}</div>
+            <div class="achievement-label">{{ def.label }}</div>
+            <div class="achievement-desc">{{ def.desc }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card profile-section" v-if="prTimeline.length > 0 || achTimeline.length > 0">
+        <div class="card-header">PR Timeline</div>
+        <div class="pr-timeline">
+          <div v-for="item in combinedTimeline" :key="item.key" class="timeline-item">
+            <div class="timeline-dot" :class="{ achievement: item.isAchievement }"></div>
+            <div class="timeline-content">
+              <template v-if="item.isAchievement">
+                <div style="font-weight:600;font-size:0.85rem">{{ item.icon }} {{ item.label }}</div>
+                <div class="text-sm text-dim">{{ item.desc }}</div>
+              </template>
+              <template v-else>
+                <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+                  <span class="lift-badge" :class="item.lift_type">{{ item.lift_type }}</span>
+                  <span style="font-family:'Space Grotesk';font-weight:700;font-size:1.1rem">{{ item.weight }} lbs</span>
+                  <span v-if="item.reps > 1" style="font-size:0.75rem;color:var(--text-dim)">x{{ item.reps }} (e1RM: {{ item.e1rm }})</span>
+                  <span class="pr-badge">PR</span>
+                </div>
+              </template>
+              <div class="timeline-date" style="margin-top:0.35rem">{{ formatDateFull(item.dateStr) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  setup(props, { emit }) {
+    const loading = ref(true);
+    const me = ref({});
+    const achievements = ref([]);
+    const allDefs = ref([]);
+    const bodyweight = ref([]);
+    const displayName = ref('');
+    const goalTotal = ref(1000);
+    const goalSquat = ref(null);
+    const goalBench = ref(null);
+    const goalDeadlift = ref(null);
+    const bio = ref('');
+    const bwWeight = ref(null);
+    const bwDate = ref(today());
+    const bwChartCanvas = ref(null);
+    const prTimeline = ref([]);
+    const achTimeline = ref([]);
+    let bwChartInstance = null;
+
+    const combinedTimeline = computed(() => {
+      const items = [];
+      prTimeline.value.forEach(p => {
+        items.push({
+          key: 'pr-' + p.id,
+          isAchievement: false,
+          lift_type: p.lift_type,
+          weight: p.weight,
+          reps: p.reps,
+          e1rm: p.e1rm,
+          dateStr: p.date,
+          sortDate: p.date,
+        });
+      });
+      achTimeline.value.forEach(a => {
+        items.push({
+          key: 'ach-' + a.achievement_key,
+          isAchievement: true,
+          icon: a.icon,
+          label: a.label,
+          desc: a.desc,
+          dateStr: a.unlocked_at.split('T')[0] || a.unlocked_at.split(' ')[0],
+          sortDate: a.unlocked_at,
+        });
+      });
+      items.sort((a, b) => b.sortDate.localeCompare(a.sortDate));
+      return items.slice(0, 30);
+    });
+
+    const unlockedKeys = computed(() => new Set(achievements.value.map(a => a.achievement_key)));
+
+    async function loadData() {
+      const [meData, achData, defData, bwData, timeline] = await Promise.all([
+        props.api.get('/me'),
+        props.api.get('/achievements'),
+        props.api.get('/achievements/defs'),
+        props.api.get('/bodyweight?limit=60'),
+        props.api.get('/timeline'),
+      ]);
+      prTimeline.value = timeline.prs || [];
+      achTimeline.value = timeline.achievements || [];
+      me.value = meData;
+      achievements.value = achData;
+      allDefs.value = defData;
+      bodyweight.value = bwData;
+      displayName.value = meData.display_name;
+      goalTotal.value = meData.total_goal;
+      goalSquat.value = meData.squat_goal || null;
+      goalBench.value = meData.bench_goal || null;
+      goalDeadlift.value = meData.deadlift_goal || null;
+      bio.value = meData.bio || '';
+      loading.value = false;
+      emit('user-updated', meData);
+      await nextTick();
+      renderBwChart();
+    }
+
+    function renderBwChart() {
+      if (!bwChartCanvas.value || bodyweight.value.length === 0) return;
+      if (bwChartInstance) bwChartInstance.destroy();
+      const bwSorted = [...bodyweight.value].reverse();
+      bwChartInstance = new Chart(bwChartCanvas.value, {
+        type: 'line',
+        data: { datasets: [{ label: 'Body Weight', data: bwSorted.map(b => ({ x: b.date, y: b.weight })), borderColor: '#3ec97a', backgroundColor: 'rgba(62,201,122,0.1)', tension: 0.3, pointRadius: 3, borderWidth: 2, fill: true }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { type: 'category', grid: { color: 'rgba(35,35,47,0.5)' }, ticks: { color: '#4a4955', maxTicksLimit: 6 } }, y: { grid: { color: 'rgba(35,35,47,0.5)' }, ticks: { color: '#4a4955' } } } }
+      });
+    }
+
+    async function saveBio() {
+      const updated = await props.api.patch('/me', { bio: bio.value || '' });
+      emit('user-updated', updated);
+      props.showToast('✅', 'Bio updated');
+    }
+
+    async function saveName() {
+      const name = displayName.value.trim();
+      if (!name) return;
+      const updated = await props.api.patch('/me', { display_name: name });
+      emit('user-updated', updated);
+      props.showToast('✅', 'Name updated');
+    }
+
+    async function saveGoals() {
+      const updated = await props.api.patch('/me', {
+        total_goal: goalTotal.value || 1000,
+        squat_goal: goalSquat.value || null,
+        bench_goal: goalBench.value || null,
+        deadlift_goal: goalDeadlift.value || null,
+      });
+      emit('user-updated', updated);
+      props.showToast('✅', 'Goals updated');
+    }
+
+    async function logBodyweight() {
+      if (!bwWeight.value || !bwDate.value) return;
+      await props.api.post('/bodyweight', { weight: bwWeight.value, date: bwDate.value });
+      props.showToast('✅', 'Body weight logged');
+      bwWeight.value = null;
+      // Reload bodyweight data
+      bodyweight.value = await props.api.get('/bodyweight?limit=60');
+      await nextTick();
+      renderBwChart();
+    }
+
+    async function deleteBodyweight(id) {
+      if (!confirm('Delete this entry?')) return;
+      await props.api.del(`/bodyweight/${id}`);
+      bodyweight.value = bodyweight.value.filter(b => b.id !== id);
+      await nextTick();
+      renderBwChart();
+    }
+
+    async function uploadAvatar(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('avatar', file);
+      try {
+        const updated = await props.api.upload('/me/avatar', formData);
+        me.value = updated;
+        emit('user-updated', updated);
+        props.showToast('✅', 'Photo updated');
+      } catch (err) {
+        props.showToast('❌', 'Upload failed', err.message);
+      }
+      e.target.value = '';
+    }
+
+    async function removeAvatar() {
+      try {
+        const updated = await props.api.del('/me/avatar');
+        me.value = updated;
+        emit('user-updated', updated);
+        props.showToast('✅', 'Photo removed');
+      } catch (err) {
+        props.showToast('❌', 'Error', err.message);
+      }
+    }
+
+    onMounted(() => { loadData(); });
+    onUnmounted(() => { if (bwChartInstance) bwChartInstance.destroy(); });
+
+    return {
+      loading, me, achievements, allDefs, bodyweight, unlockedKeys,
+      displayName, bio, goalTotal, goalSquat, goalBench, goalDeadlift,
+      bwWeight, bwDate, bwChartCanvas,
+      prTimeline, achTimeline, combinedTimeline,
+      saveBio, saveName, saveGoals, logBodyweight, deleteBodyweight,
+      uploadAvatar, removeAvatar,
+      formatDate, formatDateFull, initials: getInitials, avatarStyle, avatarUrl,
+    };
+  },
+});
+
+
+// ── Chat Panel ──
+app.component('chat-panel', {
+  props: ['currentUser', 'api'],
+  template: `
+    <div>
+      <div class="chat-header">
+        <span>Chat</span>
+        <span class="chat-expire">messages expire after 24h</span>
+      </div>
+      <div class="chat-messages" ref="messagesEl">
+        <div v-if="messages.length === 0" class="chat-empty">No messages yet. Say something.</div>
+        <div v-for="m in messages" :key="m.id" class="chat-msg" :class="{ own: m.user_id === currentUser.id }">
+          <div class="avatar" :style="avatarStyle(m.avatar_color)"><img v-if="m.avatar_url" :src="avatarUrl(m.avatar_url)"><template v-else>{{ initials(m.display_name) }}</template></div>
+          <div class="chat-msg-body">
+            <div class="chat-msg-name">{{ m.display_name }}<span class="chat-msg-time">{{ timeAgo(m.created_at) }}</span></div>
+            <div class="chat-msg-text" v-html="highlightMentions(m.message)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-wrap">
+        <div class="chat-input-container">
+          <div v-if="showMentions && filteredUsers.length" class="mention-dropdown">
+            <div v-for="(u, i) in filteredUsers" :key="u.id" class="mention-option" :class="{ active: i === mentionIdx }" @mousedown.prevent="pickMention(u)">
+              <div class="avatar" :style="avatarStyle(u.avatar_color)"><img v-if="u.avatar_url" :src="avatarUrl(u.avatar_url)"><template v-else>{{ initials(u.display_name) }}</template></div>
+              <span>{{ u.display_name }}</span>
+            </div>
+          </div>
+          <input ref="inputEl" v-model="draft" @keydown="onKeydown" @input="onInput" placeholder="Type a message... (@mention)" maxlength="500">
+        </div>
+        <button @click="send" :disabled="!draft.trim()">Send</button>
+      </div>
+    </div>
+  `,
+  setup(props) {
+    const messages = ref([]);
+    const draft = ref('');
+    const messagesEl = ref(null);
+    const inputEl = ref(null);
+    const allUsers = ref([]);
+    const showMentions = ref(false);
+    const mentionQuery = ref('');
+    const mentionIdx = ref(0);
+    const mentionStart = ref(-1);
+
+    const filteredUsers = computed(() => {
+      if (!mentionQuery.value) return allUsers.value.slice(0, 8);
+      const q = mentionQuery.value.toLowerCase();
+      return allUsers.value.filter(u => u.display_name.toLowerCase().includes(q)).slice(0, 8);
+    });
+
+    async function loadMessages() {
+      messages.value = await props.api.get('/chat');
+      await nextTick();
+      scrollToBottom();
+    }
+
+    async function loadUsers() {
+      allUsers.value = await props.api.get('/users');
+    }
+
+    function scrollToBottom() {
+      if (messagesEl.value) {
+        messagesEl.value.scrollTop = messagesEl.value.scrollHeight;
+      }
+    }
+
+    function onInput() {
+      const el = inputEl.value;
+      if (!el) return;
+      const pos = el.selectionStart;
+      const text = draft.value.slice(0, pos);
+      const atIdx = text.lastIndexOf('@');
+      if (atIdx >= 0 && (atIdx === 0 || text[atIdx - 1] === ' ')) {
+        mentionStart.value = atIdx;
+        mentionQuery.value = text.slice(atIdx + 1);
+        showMentions.value = true;
+        mentionIdx.value = 0;
+      } else {
+        showMentions.value = false;
+      }
+    }
+
+    function onKeydown(e) {
+      if (showMentions.value && filteredUsers.value.length) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          mentionIdx.value = (mentionIdx.value + 1) % filteredUsers.value.length;
+          return;
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          mentionIdx.value = (mentionIdx.value - 1 + filteredUsers.value.length) % filteredUsers.value.length;
+          return;
+        }
+        if (e.key === 'Tab' || (e.key === 'Enter' && showMentions.value)) {
+          e.preventDefault();
+          pickMention(filteredUsers.value[mentionIdx.value]);
+          return;
+        }
+        if (e.key === 'Escape') {
+          showMentions.value = false;
+          return;
+        }
+      }
+      if (e.key === 'Enter' && !showMentions.value) {
+        send();
+      }
+    }
+
+    function pickMention(user) {
+      const before = draft.value.slice(0, mentionStart.value);
+      const after = draft.value.slice(inputEl.value.selectionStart);
+      draft.value = before + '@' + user.display_name + ' ' + after;
+      showMentions.value = false;
+      nextTick(() => {
+        const newPos = before.length + 1 + user.display_name.length + 1;
+        inputEl.value.focus();
+        inputEl.value.setSelectionRange(newPos, newPos);
+      });
+    }
+
+    function highlightMentions(text) {
+      let escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      for (const u of allUsers.value) {
+        const mention = '@' + u.display_name;
+        const escapedMention = mention.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        escaped = escaped.split(escapedMention).join('<span class="chat-mention">' + escapedMention + '</span>');
+      }
+      // Detect image URLs and render inline
+      escaped = escaped.replace(/(https?:\/\/\S+\.(?:gif|jpg|jpeg|png|webp)(?:\?\S*)?)/gi, '<br><img src="$1" class="chat-inline-img" loading="lazy" onclick="showLightbox(\'$1\', false)" onerror="this.style.display=\'none\'">');
+      return escaped;
+    }
+
+    async function send() {
+      const text = draft.value.trim();
+      if (!text) return;
+      draft.value = '';
+      showMentions.value = false;
+      try {
+        await props.api.post('/chat', { message: text });
+      } catch (err) {
+        draft.value = text;
+      }
+    }
+
+    function handleWS(event, data) {
+      if (event === 'chat') {
+        messages.value.push(data);
+        nextTick(scrollToBottom);
+      }
+    }
+
+    onMounted(() => {
+      loadMessages();
+      loadUsers();
+    });
+
+    return {
+      messages, draft, messagesEl, inputEl,
+      allUsers, showMentions, filteredUsers, mentionIdx,
+      send, handleWS, loadMessages, onInput, onKeydown, pickMention, highlightMentions,
+      initials: getInitials, timeAgo, avatarStyle, avatarUrl,
+    };
+  },
+  mounted() {
+    this._wsHandler = (event, data) => this.handleWS(event, data);
+    this.$root.onWS(this._wsHandler);
+  },
+  unmounted() {
+    if (this._wsHandler) this.$root.offWS(this._wsHandler);
+  },
+});
+
+
+// ── Notifications Page ──
+app.component('notifications-page', {
+  props: ['currentUser', 'api'],
+  emits: ['read'],
+  template: `
+    <div>
+      <div class="card">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Notifications</span>
+          <button v-if="notifications.length > 0" class="btn btn-ghost btn-sm" @click="markAllRead">Mark all read</button>
+        </div>
+        <div class="notif-filter-row">
+          <div class="tabs">
+            <button class="tab" :class="{ active: filter === '' }" @click="filter = ''">All</button>
+            <button class="tab" :class="{ active: filter === 'reaction' }" @click="filter = 'reaction'">Reactions</button>
+            <button class="tab" :class="{ active: filter === 'mention' }" @click="filter = 'mention'">Mentions</button>
+            <button class="tab" :class="{ active: filter === 'achievement' }" @click="filter = 'achievement'">Achievements</button>
+            <button class="tab" :class="{ active: filter === 'challenge' }" @click="filter = 'challenge'">Challenges</button>
+          </div>
+        </div>
+        <div v-if="filtered.length === 0" class="text-center text-dim" style="padding:2rem">No notifications yet</div>
+        <div v-for="n in filtered" :key="n.id" class="notif-item" :class="{ unread: !n.read }" @click="markRead(n)">
+          <div class="notif-icon">{{ typeIcon(n.type) }}</div>
+          <div class="notif-body">
+            <div class="notif-title">{{ n.title }}</div>
+            <div v-if="n.body" class="notif-text">{{ n.body }}</div>
+            <div class="notif-time">{{ timeAgo(n.created_at) }}</div>
+          </div>
+          <div v-if="n.from_display_name" class="avatar" style="width:24px;height:24px;font-size:0.5rem" :style="avatarStyle(n.from_avatar_color)">
+            <img v-if="n.from_avatar_url" :src="avatarUrl(n.from_avatar_url)">
+            <template v-else>{{ initials(n.from_display_name) }}</template>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  setup(props, { emit }) {
+    const notifications = ref([]);
+    const filter = ref('');
+
+    const filtered = computed(() => {
+      if (!filter.value) return notifications.value;
+      return notifications.value.filter(n => n.type === filter.value);
+    });
+
+    async function load() {
+      const data = await props.api.get('/notifications?limit=50');
+      notifications.value = data.notifications || [];
+    }
+
+    async function markRead(n) {
+      if (!n.read) {
+        n.read = 1;
+        await props.api.post('/notifications/read/' + n.id);
+        emit('read');
+      }
+    }
+
+    async function markAllRead() {
+      await props.api.post('/notifications/read-all');
+      notifications.value.forEach(n => { n.read = 1; });
+      emit('read');
+    }
+
+    function typeIcon(type) {
+      switch(type) {
+        case 'reaction': return '💪';
+        case 'mention': return '💬';
+        case 'achievement': return '🏆';
+        case 'challenge': return '⚔️';
+        case 'pr': return '🥇';
+        default: return '🔔';
+      }
+    }
+
+    onMounted(load);
+
+    return {
+      notifications, filter, filtered,
+      markRead, markAllRead, typeIcon,
+      timeAgo, initials: getInitials, avatarStyle, avatarUrl,
+    };
+  },
+});
+
+// ── Challenges Page ──
+app.component('challenges-page', {
+  props: ['currentUser', 'showToast', 'api'],
+  template: `
+    <div>
+      <div class="card mb-1">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Head-to-Head Challenges</span>
+          <button class="btn btn-primary btn-sm" @click="showCreate = !showCreate">{{ showCreate ? 'Cancel' : '+ New Challenge' }}</button>
+        </div>
+
+        <div v-if="showCreate" class="challenge-create-form" style="margin-bottom:1.25rem;padding:1rem;background:rgba(22,22,29,0.5);border:1px solid var(--border);border-radius:var(--radius)">
+          <div>
+            <label>Opponent</label>
+            <select v-model="newChallenge.opponent_id">
+              <option :value="null" disabled>Select a lifter</option>
+              <option v-for="u in users.filter(u => u.id !== currentUser.id)" :key="u.id" :value="u.id">{{ u.display_name }}</option>
+            </select>
+          </div>
+          <div class="grid-2">
+            <div>
+              <label>Challenge Type</label>
+              <select v-model="newChallenge.type">
+                <option value="most_weight">Most Total Weight</option>
+                <option value="most_lifts">Most Lifts Logged</option>
+                <option value="highest_single">Highest Single Lift</option>
+              </select>
+            </div>
+            <div>
+              <label>Lift Type</label>
+              <select v-model="newChallenge.metric">
+                <option value="any">Any Lift</option>
+                <option value="squat">Squat Only</option>
+                <option value="bench">Bench Only</option>
+                <option value="deadlift">Deadlift Only</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label>Duration (days)</label>
+            <input type="number" v-model.number="newChallenge.duration" min="1" max="30" placeholder="7">
+          </div>
+          <button class="btn btn-primary btn-block" @click="createChallenge" :disabled="!newChallenge.opponent_id">Send Challenge</button>
+        </div>
+
+        <div class="tabs mb-05">
+          <button class="tab" :class="{ active: tab === 'active' }" @click="tab = 'active'">Active</button>
+          <button class="tab" :class="{ active: tab === 'pending' }" @click="tab = 'pending'">Pending</button>
+          <button class="tab" :class="{ active: tab === 'completed' }" @click="tab = 'completed'">Completed</button>
+        </div>
+
+        <div v-if="filteredChallenges.length === 0" class="text-center text-dim" style="padding:2rem">No {{ tab }} challenges</div>
+
+        <div v-for="c in filteredChallenges" :key="c.id" class="challenge-item" :class="c.status">
+          <div class="challenge-vs">
+            <div class="avatar" style="width:28px;height:28px;font-size:0.6rem" :style="avatarStyle(c.challenger_avatar_color)">
+              <img v-if="c.challenger_avatar_url" :src="avatarUrl(c.challenger_avatar_url)">
+              <template v-else>{{ initials(c.challenger_name) }}</template>
+            </div>
+            <div>
+              <span style="font-weight:600;font-size:0.85rem">{{ c.challenger_name }}</span>
+              <span v-if="c.winner_id === c.challenger_id" class="challenge-winner-badge">🏆 Winner</span>
+            </div>
+            <span class="challenge-vs-text">VS</span>
+            <div class="avatar" style="width:28px;height:28px;font-size:0.6rem" :style="avatarStyle(c.opponent_avatar_color)">
+              <img v-if="c.opponent_avatar_url" :src="avatarUrl(c.opponent_avatar_url)">
+              <template v-else>{{ initials(c.opponent_name) }}</template>
+            </div>
+            <div>
+              <span style="font-weight:600;font-size:0.85rem">{{ c.opponent_name }}</span>
+              <span v-if="c.winner_id === c.opponent_id" class="challenge-winner-badge">🏆 Winner</span>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem">
+            <span class="challenge-type-badge">{{ typeLabel(c.type) }}</span>
+            <span v-if="c.metric && c.metric !== 'any'" class="lift-badge" :class="c.metric">{{ c.metric }}</span>
+            <span class="text-sm text-dim" style="margin-left:auto">{{ formatDate(c.start_date) }} — {{ formatDate(c.end_date) }}</span>
+          </div>
+
+          <div v-if="c.scores && c.status === 'active'" style="margin-bottom:0.5rem">
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.25rem">
+              <span style="font-weight:600">{{ scoreValue(c, c.challenger_id) }}</span>
+              <span style="font-weight:600">{{ scoreValue(c, c.opponent_id) }}</span>
+            </div>
+            <div class="challenge-score-bar">
+              <div class="challenge-score-fill" :style="{ width: scorePercent(c, c.challenger_id) + '%', background: 'var(--blue)' }"></div>
+              <div class="challenge-score-fill" :style="{ width: scorePercent(c, c.opponent_id) + '%', background: 'var(--red)' }"></div>
+            </div>
+          </div>
+
+          <div v-if="c.status === 'pending' && c.opponent_id === currentUser.id" style="display:flex;gap:0.5rem;margin-top:0.5rem">
+            <button class="btn btn-primary btn-sm" @click="respond(c.id, true)">Accept</button>
+            <button class="btn btn-danger btn-sm" @click="respond(c.id, false)">Decline</button>
+          </div>
+          <div v-if="c.status === 'pending' && c.challenger_id === currentUser.id" class="text-sm text-dim" style="margin-top:0.25rem">
+            Waiting for {{ c.opponent_name }} to accept...
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  setup(props) {
+    const challenges = ref([]);
+    const users = ref([]);
+    const tab = ref('active');
+    const showCreate = ref(false);
+    const newChallenge = reactive({
+      opponent_id: null,
+      type: 'most_weight',
+      metric: 'any',
+      duration: 7,
+    });
+
+    const filteredChallenges = computed(() => {
+      return challenges.value.filter(c => c.status === tab.value);
+    });
+
+    function typeLabel(type) {
+      switch(type) {
+        case 'most_weight': return 'Most Weight';
+        case 'most_lifts': return 'Most Lifts';
+        case 'highest_single': return 'Highest Single';
+        default: return type;
+      }
+    }
+
+    function scoreValue(c, userId) {
+      if (!c.scores || !c.scores[userId]) return 0;
+      const s = c.scores[userId];
+      if (c.type === 'most_weight') return s.total_weight + ' lbs';
+      if (c.type === 'most_lifts') return s.lift_count + ' lifts';
+      if (c.type === 'highest_single') return s.max_weight + ' lbs';
+      return 0;
+    }
+
+    function scorePercent(c, userId) {
+      if (!c.scores) return 50;
+      const s1 = c.scores[c.challenger_id] || {};
+      const s2 = c.scores[c.opponent_id] || {};
+      let v1, v2;
+      if (c.type === 'most_weight') { v1 = s1.total_weight || 0; v2 = s2.total_weight || 0; }
+      else if (c.type === 'most_lifts') { v1 = s1.lift_count || 0; v2 = s2.lift_count || 0; }
+      else { v1 = s1.max_weight || 0; v2 = s2.max_weight || 0; }
+      const total = v1 + v2;
+      if (total === 0) return 50;
+      return userId === c.challenger_id ? Math.round((v1 / total) * 100) : Math.round((v2 / total) * 100);
+    }
+
+    async function load() {
+      const [chData, uData] = await Promise.all([
+        props.api.get('/challenges'),
+        props.api.get('/users'),
+      ]);
+      challenges.value = chData;
+      users.value = uData;
+    }
+
+    async function createChallenge() {
+      try {
+        await props.api.post('/challenges', {
+          opponent_id: newChallenge.opponent_id,
+          type: newChallenge.type,
+          metric: newChallenge.metric,
+          duration_days: newChallenge.duration,
+        });
+        props.showToast('⚔️', 'Challenge sent!');
+        showCreate.value = false;
+        newChallenge.opponent_id = null;
+        load();
+      } catch(e) {
+        props.showToast('❌', 'Error', e.message);
+      }
+    }
+
+    async function respond(id, accept) {
+      try {
+        await props.api.post('/challenges/' + id + '/respond', { accept });
+        props.showToast(accept ? '✅' : '❌', accept ? 'Challenge accepted!' : 'Challenge declined');
+        load();
+      } catch(e) {
+        props.showToast('❌', 'Error', e.message);
+      }
+    }
+
+    onMounted(load);
+
+    return {
+      challenges, users, tab, showCreate, newChallenge, filteredChallenges,
+      typeLabel, scoreValue, scorePercent, createChallenge, respond,
+      formatDate, initials: getInitials, avatarStyle, avatarUrl,
+    };
+  },
+});
+
+// Mount
+app.mount('#vue-app');
+</script>
+</body>
+</html>
