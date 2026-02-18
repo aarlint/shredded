@@ -46,7 +46,11 @@ const upload = multer({
 });
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
+const staticDir = process.env.NODE_ENV === 'production'
+  ? path.join(__dirname, 'dist')
+  : path.join(__dirname, 'public');
+app.use(express.static(staticDir));
 
 // Auth middleware
 app.use('/api', (req, res, next) => {
@@ -440,12 +444,12 @@ app.get('/api/dots', (req, res) => {
   res.json({ dots, bodyweight: bw, total });
 });
 
-// Serve manifest and SW from public
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve manifest and SW from static dir
+app.use(express.static(staticDir));
 
 // SPA fallback
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(staticDir, 'index.html'));
 });
 
 server.listen(PORT, () => console.log(`1000LB CLUB running on :${PORT}`));

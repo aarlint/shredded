@@ -1,0 +1,36 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* iOS safe area custom props */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+:root {
+  --bg-deep: #08080a;
+  --bg-surface: #101014;
+  --bg-card: #16161d;
+  --bg-card-hover: #1e1e28;
+  --bg-input: #0c0c10;
+  --border: #23232f;
+  --border-hover: #33334a;
+  --text-primary: #f0eff4;
+  --text-secondary: #8b8a95;
+  --text-dim: #4a4955;
+  --red: #e54545;
+  --red-dim: #3d1515;
+  --gold: #c8a44e;
+  --gold-dim: #4a3a15;
+  --blue: #4e8cff;
+  --blue-dim: #152a55;
+  --green: #3ec97a;
+  --green-dim: #0f3320;
+  --squat-color: var(--blue);
+  --bench-color: var(--red);
+  --deadlift-color: var(--gold);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+}
