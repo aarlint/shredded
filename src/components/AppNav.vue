@@ -26,7 +26,7 @@ function navigate(name) {
 <template>
   <nav>
     <div class="nav-inner">
-      <div class="nav-brand">1000LB CLUB</div>
+      <div class="nav-brand">SHREDDED <span class="nav-tagline">~/built/by/arlint.dev</span></div>
       <button
         class="hamburger"
         @click="mobileNavOpen = !mobileNavOpen"
@@ -46,6 +46,12 @@ function navigate(name) {
           href="#/log"
           :class="{ active: isActive('log') }"
           >Log Lift</a
+        >
+        <a
+          @click.prevent="navigate('log-run')"
+          href="#/log-run"
+          :class="{ active: isActive('log-run') || isActive('run-history') }"
+          >Run</a
         >
         <a
           @click.prevent="navigate('history')"

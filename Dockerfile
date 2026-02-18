@@ -1,34 +1,36 @@
-# Stage 1: Build frontend
-FROM node:22-alpine AS frontend
+# Single builder stage with build tools
+FROM cgr.dev/chainguard/node:latest-dev AS builder
+
+USER root
+RUN apk add --no-cache python3 build-base && npm install -g node-gyp
+USER node
 
 WORKDIR /app
 
+# Install all deps (need build tools for better-sqlite3)
 COPY package.json ./
 RUN npm install
 
+# Build frontend
 COPY index.html vite.config.js ./
 COPY src/ ./src/
 COPY public/ ./public/
-
 RUN npm run build
 
-# Stage 2: Production
-FROM node:22-alpine
+# Reinstall production-only deps
+RUN rm -rf node_modules && npm install --omit=dev
 
-RUN apk add --no-cache python3 make g++
+# Production (distroless)
+FROM cgr.dev/chainguard/node:latest
 
 WORKDIR /app
 
-COPY package.json ./
-RUN npm install --production && apk del python3 make g++
-
-COPY server.js db.js ./
-COPY --from=frontend /app/dist ./dist/
+COPY --from=builder /app/node_modules ./node_modules/
+COPY package.json server.js db.js ./
+COPY --from=builder /app/dist ./dist/
 
 RUN mkdir -p /app/data/uploads
 
 ENV NODE_ENV=production
-
 EXPOSE 3000
-
-CMD ["node", "server.js"]
+CMD ["server.js"]

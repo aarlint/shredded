@@ -1079,6 +1079,31 @@
 }
 .dots-toggle input:checked ~ .toggle-track { background: rgba(200,164,78,0.2); border-color: var(--gold); }
 .dots-toggle input:checked ~ .toggle-track .toggle-thumb { left: 15px; background: var(--gold); }
+.lb-mode-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.lb-mode-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.lb-mode-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+.lb-mode-btn:hover:not(.active) {
+  background: var(--card-hover);
+}
+
 .dots-info-btn {
   display: inline-flex; align-items: center; justify-content: center;
   width: 16px; height: 16px;

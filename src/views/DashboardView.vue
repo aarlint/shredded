@@ -12,6 +12,7 @@ import {
   Wrench,
   Mountain,
   Tag,
+  Footprints,
 } from 'lucide-vue-next'
 import { api } from '../composables/useApi'
 import { onWS, offWS } from '../composables/useWebSocket'
@@ -44,12 +45,14 @@ const router = useRouter()
 
 const loading = ref(true)
 const leaderboard = ref([])
+const runLeaderboard = ref([])
 const activity = ref([])
 const stats = ref(null)
 const runStats = ref(null)
 const sparklines = reactive({})
 const showDOTS = ref(false)
 const showDotsInfo = ref(false)
+const leaderboardMode = ref('lift')
 
 const me = computed(() =>
   leaderboard.value.find((u) => u.id === currentUser.value.id)
@@ -98,16 +101,22 @@ function getTierIcon(tier) {
 }
 
 async function loadData() {
-  const [lb, act, st, rs] = await Promise.all([
+  const [lb, rlb, act, st, rs] = await Promise.all([
     api.get('/leaderboard'),
+    api.get('/leaderboard/runs'),
     api.get('/activity?limit=15'),
     api.get('/stats'),
     api.get('/runs/stats'),
   ])
   leaderboard.value = lb
+  runLeaderboard.value = rlb
   activity.value = act
   stats.value = st
   runStats.value = rs
+  // Set initial leaderboard mode from user preference
+  if (currentUser.value && currentUser.value.leaderboard_mode) {
+    leaderboardMode.value = currentUser.value.leaderboard_mode
+  }
   loading.value = false
   lb.forEach((u) => {
     api
@@ -154,6 +163,29 @@ function handleWS(event, data) {
   }
 }
 
+async function toggleLeaderboardMode(mode) {
+  leaderboardMode.value = mode
+  try {
+    await api.patch('/me/leaderboard-mode', { mode })
+  } catch (e) { /* best effort */ }
+}
+
+function formatPace(secondsPerMile) {
+  if (!secondsPerMile) return '—'
+  const min = Math.floor(secondsPerMile / 60)
+  const sec = Math.floor(secondsPerMile % 60).toString().padStart(2, '0')
+  return `${min}:${sec}`
+}
+
+function formatDuration(totalSeconds) {
+  if (!totalSeconds) return '—'
+  const h = Math.floor(totalSeconds / 3600)
+  const m = Math.floor((totalSeconds % 3600) / 60)
+  const s = totalSeconds % 60
+  if (h > 0) return `${h}h ${m}m`
+  return `${m}m ${s}s`
+}
+
 function goToUser(u) {
   if (u.id === currentUser.value.id) {
     router.push({ name: 'history' })
@@ -197,7 +229,7 @@ onUnmounted(() => {
         />
         <div style="margin-top: 0.75rem">
           <span v-if="myPct >= 100" class="club-badge"
-            >&#9733; 1000LB CLUB MEMBER</span
+            >&#9733; SHREDDED MEMBER</span
           >
           <span v-else class="text-sm text-secondary"
             >{{ myGoal - myTotal }} lbs to go</span
@@ -287,7 +319,7 @@ onUnmounted(() => {
 
     <div v-if="runStats && runStats.total_runs > 0" class="card mb-1">
       <div class="card-header" style="display: flex; justify-content: space-between; align-items: center">
-        <span>🏃 Running</span>
+        <span><Footprints :size="16" style="vertical-align: middle" /> Running</span>
         <router-link to="/run-history" class="btn btn-secondary btn-sm">View All</router-link>
       </div>
       <div class="stats-grid" style="margin-bottom: 0">
@@ -313,12 +345,25 @@ onUnmounted(() => {
     <div class="card mb-1">
       <div
         class="card-header"
-        style="display: flex; justify-content: space-between; align-items: center"
+        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem"
       >
         <span>Leaderboard</span>
+        <div style="display: flex; align-items: center; gap: 0.75rem">
+          <div class="lb-mode-toggle">
+            <button
+              class="lb-mode-btn"
+              :class="{ active: leaderboardMode === 'lift' }"
+              @click="toggleLeaderboardMode('lift')"
+            ><Dumbbell :size="14" style="vertical-align: middle" /> Lift</button>
+            <button
+              class="lb-mode-btn"
+              :class="{ active: leaderboardMode === 'run' }"
+              @click="toggleLeaderboardMode('run')"
+            ><Footprints :size="14" style="vertical-align: middle" /> Run</button>
+          </div>
         <label
           class="dots-toggle"
-          v-if="leaderboard.some((u) => u.dots > 0)"
+          v-if="leaderboardMode === 'lift' && leaderboard.some((u) => u.dots > 0)"
         >
           <input type="checkbox" v-model="showDOTS" />
           <span class="toggle-track"><span class="toggle-thumb"></span></span>
@@ -389,6 +434,9 @@ onUnmounted(() => {
           </div>
         </Teleport>
       </div>
+      </div>
+      <!-- Lift Leaderboard -->
+      <template v-if="leaderboardMode === 'lift'">
       <div class="lb-header">
         <span>#</span><span>Lifter</span><span>Squat</span
         ><span>Bench</span><span>Dead</span
@@ -508,6 +556,62 @@ onUnmounted(() => {
           <div class="stat-label">{{ showDOTS ? 'DOTS' : 'LBS' }}</div>
         </div>
       </div>
+      </template>
+      <!-- Run Leaderboard -->
+      <template v-else>
+      <div class="lb-header" style="grid-template-columns: 40px 1fr repeat(4, 70px)">
+        <span>#</span><span>Runner</span><span>Miles</span
+        ><span>Runs</span><span>Best Pace</span
+        ><span>Weekly</span>
+      </div>
+      <div
+        v-for="(u, i) in runLeaderboard"
+        :key="u.id"
+        class="lb-row"
+        style="grid-template-columns: 40px 1fr repeat(4, 70px)"
+        @click="goToUser(u)"
+      >
+        <div
+          class="rank"
+          :class="
+            i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''
+          "
+        >
+          {{ i + 1 }}
+        </div>
+        <div class="user-info">
+          <div class="avatar" :style="avatarStyle(u.avatar_color)">
+            <img
+              v-if="u.avatar_url"
+              :src="avatarUrl(u.avatar_url)"
+            />
+            <template v-else>{{
+              getInitials(u.display_name)
+            }}</template>
+          </div>
+          <div>
+            <div style="font-weight: 600; font-size: 0.9rem">
+              {{ u.display_name }}
+            </div>
+          </div>
+        </div>
+        <div class="lift-val" style="color: var(--green)">
+          {{ Math.round(u.total_miles * 10) / 10 }}
+        </div>
+        <div class="lift-val">
+          {{ u.total_runs }}
+        </div>
+        <div class="lift-val" style="color: var(--gold)">
+          {{ formatPace(u.best_pace) }}
+        </div>
+        <div class="lift-val" style="color: var(--blue)">
+          {{ Math.round(u.weekly_miles * 10) / 10 }}
+        </div>
+      </div>
+      <div v-if="runLeaderboard.length === 0" class="text-center text-dim" style="padding: 2rem">
+        No runs logged yet. Be the first! 🏃
+      </div>
+      </template>
     </div>
 
     <div class="card">

@@ -87,6 +87,9 @@ try { db.exec('ALTER TABLE users ADD COLUMN avatar_url TEXT'); } catch (e) { /* 
 // Migration: add bio column to users (idempotent)
 try { db.exec('ALTER TABLE users ADD COLUMN bio TEXT'); } catch (e) { /* column already exists */ }
 
+// Migration: add leaderboard_mode column to users (idempotent)
+try { db.exec("ALTER TABLE users ADD COLUMN leaderboard_mode TEXT NOT NULL DEFAULT 'lift'"); } catch (e) { /* column already exists */ }
+
 // Migration: add reps column to lifts (default 1)
 try { db.exec('ALTER TABLE lifts ADD COLUMN reps INTEGER NOT NULL DEFAULT 1'); } catch (e) { /* column already exists */ }
 
@@ -410,6 +413,22 @@ const leaderboardQuery = db.prepare(`
           + COALESCE(MAX(CASE WHEN l.lift_type = 'deadlift' THEN l.weight END), 0)) DESC
 `);
 
+const runLeaderboardQuery = db.prepare(`
+  SELECT
+    u.id, u.display_name, u.avatar_color, u.avatar_url, u.bio,
+    COUNT(r.id) as total_runs,
+    COALESCE(SUM(r.distance_miles), 0) as total_miles,
+    COALESCE(SUM(r.duration_seconds), 0) as total_duration_seconds,
+    MIN(CASE WHEN r.distance_miles > 0 THEN CAST(r.duration_seconds AS REAL) / r.distance_miles END) as best_pace,
+    MAX(r.distance_miles) as longest_run,
+    COALESCE(SUM(CASE WHEN r.date >= date('now', '-7 days') THEN r.distance_miles ELSE 0 END), 0) as weekly_miles
+  FROM users u
+  LEFT JOIN runs r ON r.user_id = u.id
+  GROUP BY u.id
+  HAVING total_runs > 0
+  ORDER BY total_miles DESC
+`);
+
 module.exports = {
   ACHIEVEMENTS,
 
@@ -502,6 +521,14 @@ module.exports = {
         dots: this.computeDOTS(r.bodyweight, total),
       };
     });
+  },
+
+  getRunLeaderboard() {
+    return runLeaderboardQuery.all();
+  },
+
+  setLeaderboardMode(userId, mode) {
+    db.prepare('UPDATE users SET leaderboard_mode = ? WHERE id = ?').run(mode, userId);
   },
 
   getActivity(limit = 20, offset = 0) {

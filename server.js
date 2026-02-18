@@ -110,6 +110,19 @@ app.get('/api/leaderboard', (req, res) => {
   res.json(db.getLeaderboard());
 });
 
+app.get('/api/leaderboard/runs', (req, res) => {
+  res.json(db.getRunLeaderboard());
+});
+
+app.patch('/api/me/leaderboard-mode', (req, res) => {
+  const { mode } = req.body;
+  if (!mode || !['lift', 'run'].includes(mode)) {
+    return res.status(400).json({ error: 'mode must be "lift" or "run"' });
+  }
+  db.setLeaderboardMode(req.user.id, mode);
+  res.json({ ok: true, mode });
+});
+
 // --- Lift routes ---
 
 app.post('/api/lifts', upload.single('media'), (req, res) => {

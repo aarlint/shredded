@@ -17,9 +17,9 @@
   main { padding: 1rem; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .heatmap-grid { grid-template-columns: repeat(7, 1fr); }
-  .bottom-nav { display: block; }
-  /* Hide top nav links on mobile, show bottom nav instead */
-  nav .nav-links { display: none !important; }
+  .bottom-nav { display: flex !important; position: fixed !important; bottom: 0 !important; top: auto !important; }
+  /* Hide top nav on mobile, show bottom nav instead */
+  nav:not(.bottom-nav) { display: none !important; }
   .hamburger { display: none !important; }
   main { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
   .chat-toggle-btn { display: none !important; }

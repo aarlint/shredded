@@ -87,7 +87,7 @@ onMounted(async () => {
   <template v-if="initError">
     <nav>
       <div class="nav-inner">
-        <div class="nav-brand">1000LB CLUB</div>
+        <div class="nav-brand">SHREDDED <span class="nav-tagline">~/built/by/arlint.dev</span></div>
       </div>
     </nav>
     <main>
@@ -106,7 +106,7 @@ onMounted(async () => {
   <template v-else-if="!currentUser">
     <nav>
       <div class="nav-inner">
-        <div class="nav-brand">1000LB CLUB</div>
+        <div class="nav-brand">SHREDDED <span class="nav-tagline">~/built/by/arlint.dev</span></div>
       </div>
     </nav>
     <main>
