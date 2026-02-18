@@ -6,11 +6,15 @@ import NotificationsView from './views/NotificationsView.vue'
 import ChallengesView from './views/ChallengesView.vue'
 import ProfileView from './views/ProfileView.vue'
 import ChatView from './views/ChatView.vue'
+import LogRunView from './views/LogRunView.vue'
+import RunHistoryView from './views/RunHistoryView.vue'
 
 const routes = [
   { path: '/', name: 'dashboard', component: DashboardView },
   { path: '/dashboard', redirect: '/' },
   { path: '/log', name: 'log', component: LogLiftView },
+  { path: '/log-run', name: 'log-run', component: LogRunView },
+  { path: '/run-history', name: 'run-history', component: RunHistoryView },
   { path: '/history', name: 'history', component: HistoryView },
   { path: '/user/:id', name: 'user', component: HistoryView, props: route => ({ userId: Number(route.params.id) }) },
   { path: '/notifications', name: 'notifications', component: NotificationsView },

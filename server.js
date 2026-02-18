@@ -303,6 +303,51 @@ app.post('/api/chat', (req, res) => {
 // Serve uploaded media files
 app.use('/api/uploads', express.static(UPLOADS_DIR));
 
+// --- Runs ---
+
+app.post('/api/runs', (req, res) => {
+  const { activity_type, distance_miles, duration_seconds, date, notes } = req.body;
+  if (!activity_type || !distance_miles || !duration_seconds || !date) {
+    return res.status(400).json({ error: 'activity_type, distance_miles, duration_seconds, and date are required' });
+  }
+  if (!['run', '5k', '10k', 'half_marathon', 'marathon'].includes(activity_type)) {
+    return res.status(400).json({ error: 'Invalid activity type' });
+  }
+  if (typeof distance_miles !== 'number' || distance_miles <= 0) {
+    return res.status(400).json({ error: 'distance_miles must be a positive number' });
+  }
+  if (typeof duration_seconds !== 'number' || duration_seconds <= 0) {
+    return res.status(400).json({ error: 'duration_seconds must be a positive number' });
+  }
+  const result = db.logRun(req.user.id, activity_type, distance_miles, duration_seconds, date, notes);
+  broadcast('new_run', { user_id: req.user.id, display_name: req.user.display_name, activity_type, distance_miles, duration_seconds });
+  if (result.newAchievements && result.newAchievements.length > 0) {
+    broadcast('achievement', { user_id: req.user.id, display_name: req.user.display_name, achievements: result.newAchievements });
+    result.newAchievements.forEach(a => {
+      db.createNotification(req.user.id, 'achievement', 'Achievement Unlocked!', `${a.label}: ${a.desc}`, null, null);
+    });
+  }
+  res.json(result);
+});
+
+app.get('/api/runs', (req, res) => {
+  const userId = req.query.user_id ? parseInt(req.query.user_id) : req.user.id;
+  const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+  const offset = parseInt(req.query.offset) || 0;
+  res.json(db.getRuns(userId, limit, offset));
+});
+
+app.delete('/api/runs/:id', (req, res) => {
+  const deleted = db.deleteRun(parseInt(req.params.id), req.user.id);
+  if (!deleted) return res.status(404).json({ error: 'Run not found or not yours' });
+  broadcast('delete_run', { run_id: parseInt(req.params.id), user_id: req.user.id });
+  res.json({ ok: true });
+});
+
+app.get('/api/runs/stats', (req, res) => {
+  res.json(db.getRunStats(req.user.id));
+});
+
 // --- Stats ---
 app.get('/api/stats', (req, res) => {
   res.json(db.getUserStats(req.user.id));

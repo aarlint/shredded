@@ -6,6 +6,7 @@ import {
   BarChart3,
   Bell,
   User,
+  Footprints,
 } from 'lucide-vue-next'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -43,6 +44,14 @@ function navigate(name) {
         :class="{ active: isActive('log') }"
       >
         <span class="nav-icon"><Plus :size="20" /></span>Log
+      </a>
+      <a
+        @click.prevent="navigate('log-run')"
+        href="#/log-run"
+        class="bottom-nav-item"
+        :class="{ active: isActive('log-run') || isActive('run-history') }"
+      >
+        <span class="nav-icon"><Footprints :size="20" /></span>Run
       </a>
       <a
         @click.prevent="navigate('chat')"

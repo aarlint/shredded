@@ -137,6 +137,22 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_challenges_users ON challenges(challenger_id, opponent_id);
 `);
 
+// Migration: create runs table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS runs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    activity_type TEXT NOT NULL CHECK(activity_type IN ('run', '5k', '10k', 'half_marathon', 'marathon')),
+    distance_miles REAL NOT NULL,
+    duration_seconds INTEGER NOT NULL,
+    date TEXT NOT NULL,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_runs_user ON runs(user_id);
+  CREATE INDEX IF NOT EXISTS idx_runs_date ON runs(date DESC);
+`);
+
 // Assign random avatar colors to users that don't have one
 const AVATAR_COLORS = [
   'linear-gradient(135deg, #4a9e6e, #d4a94e)',
@@ -180,6 +196,14 @@ const ACHIEVEMENTS = [
   { key: 'total_1000', label: '1000 LB CLUB', desc: '1000 lb total!', icon: '🏆', check: (p) => (p.squat + p.bench + p.deadlift) >= 1000 },
   { key: 'total_1200', label: 'Elite', desc: '1200 lb total', icon: '💎', check: (p) => (p.squat + p.bench + p.deadlift) >= 1200 },
   { key: 'total_1500', label: 'Freak', desc: '1500 lb total', icon: '🦍', check: (p) => (p.squat + p.bench + p.deadlift) >= 1500 },
+  // Running achievements (checked via checkRunAchievements, check fn unused here)
+  { key: 'first_run', label: 'First Mile', desc: 'Log your first run', icon: '🏃', check: () => false },
+  { key: 'first_5k', label: '5K Finisher', desc: 'Complete a 5K', icon: '🏃', check: () => false },
+  { key: 'first_10k', label: '10K Finisher', desc: 'Complete a 10K', icon: '🏃', check: () => false },
+  { key: 'first_half', label: 'Half Marathon', desc: 'Complete a half marathon', icon: '🏅', check: () => false },
+  { key: 'first_marathon', label: 'Marathoner', desc: 'Complete a marathon', icon: '🏆', check: () => false },
+  { key: 'miles_100', label: 'Century Runner', desc: 'Run 100 total miles', icon: '💯', check: () => false },
+  { key: 'miles_500', label: 'Road Warrior', desc: 'Run 500 total miles', icon: '🛣️', check: () => false },
 ];
 
 // Prepared statements
@@ -328,6 +352,33 @@ const stmts = {
     AND (? = 'any' OR lift_type = ?)
     GROUP BY user_id
   `),
+  // Runs
+  insertRun: db.prepare('INSERT INTO runs (user_id, activity_type, distance_miles, duration_seconds, date, notes) VALUES (?, ?, ?, ?, ?, ?)'),
+  getRuns: db.prepare(`
+    SELECT r.*, u.display_name, u.avatar_color, u.avatar_url
+    FROM runs r JOIN users u ON r.user_id = u.id
+    WHERE r.user_id = ? ORDER BY r.date DESC, r.created_at DESC LIMIT ? OFFSET ?
+  `),
+  getRunById: db.prepare('SELECT * FROM runs WHERE id = ?'),
+  deleteRunStmt: db.prepare('DELETE FROM runs WHERE id = ? AND user_id = ?'),
+  getRunStats: db.prepare(`
+    SELECT
+      COALESCE(SUM(distance_miles), 0) as total_miles,
+      COUNT(*) as total_runs,
+      MIN(CASE WHEN distance_miles > 0 THEN CAST(duration_seconds AS REAL) / distance_miles END) as best_pace_seconds_per_mile,
+      COALESCE(SUM(CASE WHEN date >= date('now', '-7 days') THEN distance_miles ELSE 0 END), 0) as weekly_miles,
+      COALESCE(SUM(duration_seconds), 0) as total_duration_seconds
+    FROM runs WHERE user_id = ?
+  `),
+  getRunActivity: db.prepare(`
+    SELECT r.*, u.display_name, u.email, u.avatar_color, u.avatar_url
+    FROM runs r JOIN users u ON r.user_id = u.id
+    ORDER BY r.created_at DESC LIMIT ? OFFSET ?
+  `),
+  getRunsByType: db.prepare(`
+    SELECT COUNT(*) as count FROM runs WHERE user_id = ? AND activity_type = ?
+  `),
+  getTotalRunMiles: db.prepare('SELECT COALESCE(SUM(distance_miles), 0) as total FROM runs WHERE user_id = ?'),
   // PR timeline
   getPRTimeline: db.prepare(`
     SELECT l.id, l.lift_type, l.weight, l.reps, l.date, l.created_at,
@@ -762,6 +813,61 @@ module.exports = {
       const def = ACHIEVEMENTS.find(a => a.key === r.achievement_key);
       return { ...r, label: def ? def.label : r.achievement_key, icon: def ? def.icon : '🏅', desc: def ? def.desc : '' };
     });
+  },
+
+  // --- Runs ---
+
+  logRun(userId, activityType, distanceMiles, durationSeconds, date, notes) {
+    const result = stmts.insertRun.run(userId, activityType, distanceMiles, durationSeconds, date, notes || null);
+    const newAchievements = this.checkRunAchievements(userId);
+    return { runId: result.lastInsertRowid, newAchievements };
+  },
+
+  getRuns(userId, limit = 50, offset = 0) {
+    return stmts.getRuns.all(userId, limit, offset);
+  },
+
+  deleteRun(runId, userId) {
+    const run = stmts.getRunById.get(runId);
+    if (!run || run.user_id !== userId) return false;
+    stmts.deleteRunStmt.run(runId, userId);
+    return true;
+  },
+
+  getRunStats(userId) {
+    return stmts.getRunStats.get(userId);
+  },
+
+  getRunActivity(limit = 20, offset = 0) {
+    return stmts.getRunActivity.all(limit, offset);
+  },
+
+  checkRunAchievements(userId) {
+    const newlyUnlocked = [];
+    const totalMiles = stmts.getTotalRunMiles.get(userId).total;
+    const totalRuns = db.prepare('SELECT COUNT(*) as count FROM runs WHERE user_id = ?').get(userId).count;
+
+    const checks = [
+      { key: 'first_run', condition: totalRuns >= 1 },
+      { key: 'first_5k', condition: stmts.getRunsByType.get(userId, '5k').count > 0 },
+      { key: 'first_10k', condition: stmts.getRunsByType.get(userId, '10k').count > 0 },
+      { key: 'first_half', condition: stmts.getRunsByType.get(userId, 'half_marathon').count > 0 },
+      { key: 'first_marathon', condition: stmts.getRunsByType.get(userId, 'marathon').count > 0 },
+      { key: 'miles_100', condition: totalMiles >= 100 },
+      { key: 'miles_500', condition: totalMiles >= 500 },
+    ];
+
+    for (const { key, condition } of checks) {
+      if (condition) {
+        const result = stmts.insertAchievement.run(userId, key);
+        if (result.changes > 0) {
+          const def = ACHIEVEMENTS.find(a => a.key === key);
+          if (def) newlyUnlocked.push({ key: def.key, label: def.label, desc: def.desc, icon: def.icon });
+        }
+      }
+    }
+
+    return newlyUnlocked;
   },
 
   // DOTS score calculation

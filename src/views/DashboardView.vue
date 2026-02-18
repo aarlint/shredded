@@ -46,6 +46,7 @@ const loading = ref(true)
 const leaderboard = ref([])
 const activity = ref([])
 const stats = ref(null)
+const runStats = ref(null)
 const sparklines = reactive({})
 const showDOTS = ref(false)
 const showDotsInfo = ref(false)
@@ -97,14 +98,16 @@ function getTierIcon(tier) {
 }
 
 async function loadData() {
-  const [lb, act, st] = await Promise.all([
+  const [lb, act, st, rs] = await Promise.all([
     api.get('/leaderboard'),
     api.get('/activity?limit=15'),
     api.get('/stats'),
+    api.get('/runs/stats'),
   ])
   leaderboard.value = lb
   activity.value = act
   stats.value = st
+  runStats.value = rs
   loading.value = false
   lb.forEach((u) => {
     api
@@ -278,6 +281,31 @@ onUnmounted(() => {
         </div>
         <div class="challenge-progress-text">
           {{ challengeProgress.current }} / {{ challengeProgress.target }}
+        </div>
+      </div>
+    </div>
+
+    <div v-if="runStats && runStats.total_runs > 0" class="card mb-1">
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center">
+        <span>🏃 Running</span>
+        <router-link to="/run-history" class="btn btn-secondary btn-sm">View All</router-link>
+      </div>
+      <div class="stats-grid" style="margin-bottom: 0">
+        <div class="stat-card">
+          <div class="stat-card-value">{{ Math.round(runStats.total_miles * 10) / 10 }}</div>
+          <div class="stat-card-label">Total Miles</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value">{{ runStats.total_runs }}</div>
+          <div class="stat-card-label">Runs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value" style="font-size: 1.1rem">{{ runStats.best_pace_seconds_per_mile ? `${Math.floor(runStats.best_pace_seconds_per_mile / 60)}:${Math.floor(runStats.best_pace_seconds_per_mile % 60).toString().padStart(2, '0')}` : '—' }}</div>
+          <div class="stat-card-label">Best Pace /mi</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value">{{ Math.round(runStats.weekly_miles * 10) / 10 }}</div>
+          <div class="stat-card-label">Miles This Week</div>
         </div>
       </div>
     </div>
