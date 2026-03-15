@@ -1,12 +1,11 @@
-FROM oven/bun:debian AS build
-RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+FROM oven/bun:latest AS build
 WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install
 COPY . .
 RUN bun run build
 
-FROM oven/bun:debian AS production
+FROM oven/bun:latest AS production
 WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist

@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "better-sqlite3": "^11.0.0",
+    "drizzle-orm": "^0.38.0",
     "hono": "^4.0.0"
   },
   "devDependencies": {
