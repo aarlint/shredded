@@ -1,6 +1,6 @@
 FROM oven/bun:latest AS build
 WORKDIR /app
-COPY package.json bun.lock ./
+COPY package.json ./
 RUN bun install
 COPY . .
 RUN bun run build
