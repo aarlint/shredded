@@ -1,36 +1,19 @@
-# Single builder stage with build tools
-FROM cgr.dev/chainguard/node:latest-dev AS builder
-
-USER root
-RUN apk add --no-cache python3 build-base && npm install -g node-gyp
-USER node
-
+FROM oven/bun:latest AS build
 WORKDIR /app
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+COPY . .
+RUN bun run build
 
-# Install all deps (need build tools for better-sqlite3)
-COPY package.json ./
-RUN npm install
-
-# Build frontend
-COPY index.html vite.config.js ./
-COPY src/ ./src/
-COPY public/ ./public/
-RUN npm run build
-
-# Reinstall production-only deps
-RUN rm -rf node_modules && npm install --omit=dev
-
-# Production (distroless)
-FROM cgr.dev/chainguard/node:latest
-
+FROM oven/bun:debian AS production
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-
-COPY --from=builder /app/node_modules ./node_modules/
-COPY package.json server.js db.js ./
-COPY --from=builder /app/dist ./dist/
-
-RUN mkdir -p /app/data/uploads
-
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile --production
+COPY --from=build /app/dist ./dist
+COPY server/ ./server/
+RUN mkdir -p /app/data
+VOLUME /app/data
 ENV NODE_ENV=production
 EXPOSE 3000
-CMD ["server.js"]
+CMD ["bun", "server/index.ts"]
